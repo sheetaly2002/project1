@@ -423,7 +423,7 @@ setSubCatId("");
 setProductId("");
 }
 
-},[mainCatId,subCats]);;
+},[mainCatId,subCats,isEditing]);
 
 useEffect(()=>{
 
@@ -435,7 +435,7 @@ if(!isEditing){
 setProductId("");
 }
 
-},[subCatId,allProducts]);
+},[subCatId,allProducts,isEditing]);
 
 useEffect(()=>{
 

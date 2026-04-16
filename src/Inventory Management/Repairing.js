@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaTools, FaTrash, FaSearch, FaClock, FaCheckCircle } from "react-icons/fa";
+import { FaTools, FaSearch } from "react-icons/fa";
 
 import BASE_URLS from './apiConfig';
 

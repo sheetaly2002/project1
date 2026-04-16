@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { 
   FaChartLine, FaRupeeSign, FaWeightHanging, FaBoxOpen, 
-  FaArrowUp, FaCrown, FaCalendarAlt, FaSync, FaChartPie
+  FaCrown, FaCalendarAlt, FaSync, FaChartPie
 } from 'react-icons/fa'; 
 import BASE_URLS from './apiConfig';
 

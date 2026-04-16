@@ -4,9 +4,8 @@ import BASE_URLS from './Inventory Management/apiConfig';
 import { 
   FaFileInvoiceDollar, FaWarehouse, FaBox, FaShoppingCart, 
   FaUserTie, FaUsers, FaPlusSquare, FaChartLine, FaTags, FaBars, FaGem, FaWallet, FaTools, FaSignOutAlt, FaUserShield, FaTimes,
-  FaWeightHanging, FaIndianRupeeSign
+  FaWeightHanging, FaRupeeSign
 } from "react-icons/fa";
-import { Fa6 } from 'react-icons/fa6';
 import { GiThreeLeaves } from "react-icons/gi";
 
 // --- IMPORT SECTIONS ---
@@ -613,7 +612,7 @@ const WelcomeOverview = ({ colors, user, isMobile, dashboardData, loading }) => 
         { 
           title: "Stock Value", 
           value: loading ? "Loading..." : `₹${dashboardData.stockValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 
-          icon: <FaIndianRupeeSign />, 
+          icon: <FaRupeeSign />, 
           color: "#b8860b" 
         }
       ].map((stat, index) => (

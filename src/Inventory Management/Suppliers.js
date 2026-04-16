@@ -3,7 +3,7 @@ import axios from "axios";
 import { 
   FaUniversity, FaUserTie, FaPhoneAlt, FaSearch, FaCrown, 
   FaBuilding, FaTrash, FaEdit, FaChevronLeft, FaChevronRight,
-  FaMapMarkerAlt, FaSpinner, FaPlus, FaCheckCircle
+  FaSpinner
 } from "react-icons/fa";
 import BASE_URL from './apiConfig';
 

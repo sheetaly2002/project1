@@ -224,7 +224,7 @@ import axios from "axios";
 import BASE_URLS from "./apiConfig";
 import "./PurchaseBillEntry.css";
 
-import { Trash2, Edit3, Upload, FileText, X } from "lucide-react";
+import { Trash2, Edit3, FileText, X } from "lucide-react";
 
 const PurchaseBillEntry = () => {
 

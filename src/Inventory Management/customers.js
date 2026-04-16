@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { 
-  FaUserPlus, FaUsers, FaEdit, FaTrash, FaPhoneAlt, FaSearch, 
+  FaUserPlus, FaEdit, FaTrash, FaPhoneAlt, FaSearch, 
   FaChevronLeft, FaChevronRight, FaFileUpload, FaTimes, 
-  FaMapMarkerAlt, FaAddressCard, FaCalendarDay, FaFilePdf, FaTimesCircle
+  FaMapMarkerAlt, FaFilePdf, FaTimesCircle
 } from 'react-icons/fa';
 import BASE_URL from './apiConfig';
 

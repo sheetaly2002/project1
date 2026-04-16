@@ -5,7 +5,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import BASE_URLS from "./apiConfig";
 import { Trash2, Save, Barcode, RefreshCw, Printer } from "lucide-react";
-import letterheadImg from '../bill2.jpeg';
 import "./salesManager.css";
 
 const SalesManager = () => {

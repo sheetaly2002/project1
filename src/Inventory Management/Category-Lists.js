@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { 
-  FaPlus, FaTrash, FaCrown, FaSpinner, FaFilter, FaEdit,
+  FaTrash, FaCrown, FaSpinner, FaFilter, FaEdit,
   FaGem, FaExclamationCircle, FaCheckCircle, FaSearch, FaChevronLeft, FaChevronRight 
 } from "react-icons/fa";
 import BASE_URL from './apiConfig';

@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { FaPlus, FaMinus, FaTrash, FaWallet, FaArrowUp, FaArrowDown, FaEdit, FaTimes } from "react-icons/fa";
+import { FaTrash, FaWallet, FaArrowUp, FaArrowDown, FaEdit, FaTimes } from "react-icons/fa";
 import BASE_URLS from './apiConfig';
 
 const BASE_URL = `${BASE_URLS}`;
 
 const CashBook = () => {
   const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false); // Edit mode track karne ke liye
   const [editId, setEditId] = useState(null);
 
@@ -19,13 +18,11 @@ const CashBook = () => {
   });
 
   const fetchCashBook = async () => {
-    setLoading(true);
     try {
       const res = await fetch(`${BASE_URL}/cashbook.php`);
       const data = await res.json();
       if (data.status === "success") setEntries(data.data);
     } catch (err) { console.error("Error fetching cashbook", err); }
-    setLoading(false);
   };
 
   useEffect(() => { fetchCashBook(); }, []);

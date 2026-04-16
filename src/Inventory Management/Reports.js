@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from 'axios';
-import { FaArrowUp, FaArrowDown, FaMoneyBillWave, FaChartBar, FaCalendarAlt, FaSearch, FaExclamationTriangle, FaFileInvoice, FaSpinner } from "react-icons/fa";
+import { FaArrowUp, FaArrowDown, FaMoneyBillWave, FaCalendarAlt, FaSearch, FaExclamationTriangle, FaFileInvoice, FaSpinner } from "react-icons/fa";
 import BASE_URLS from './apiConfig';
 
 const BASE_URL = `${BASE_URLS}`;
@@ -26,7 +26,7 @@ const Reports = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -50,11 +50,11 @@ const Reports = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fromDate, toDate]);
 
   useEffect(() => {
     fetchReports();
-  }, []);
+  }, [fetchReports]);
 
   // --- Calculations ---
   const totalSales = salesData.reduce((acc, sale) => acc + parseFloat(sale.final_amount || 0), 0);
@@ -73,8 +73,7 @@ const Reports = () => {
 
   const totalBills = salesData.length;
   
-  // Average bill value
-  const avgBillValue = totalBills > 0 ? totalSales / totalBills : 0;
+  // Average bill value (kept for future use)
 
   const colors = { 
     gold: "#ad8b73", 
