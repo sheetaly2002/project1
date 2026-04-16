@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import axios from 'axios';
+import BASE_URLS from './Inventory Management/apiConfig';
 import { 
   FaFileInvoiceDollar, FaWarehouse, FaBox, FaShoppingCart, 
   FaUserTie, FaUsers, FaPlusSquare, FaChartLine, FaTags, FaBars, FaGem, FaWallet, FaTools, FaSignOutAlt, FaUserShield, FaTimes
@@ -29,9 +31,52 @@ const App = () => {
   // Auth States
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
+  
+  // Dashboard Data States
+  const [dashboardData, setDashboardData] = useState({
+    todaySales: 0,
+    totalProducts: 0,
+    totalCustomers: 0,
+    pendingOrders: 0,
+    totalStockWeight: 0,
+    stockValue: 0,
+    totalSales: 0,
+    totalProfit: 0
+  });
+  const [loading, setLoading] = useState(true);
 
   // Responsive breakpoint
   const isMobile = windowWidth < 768;
+
+  // Fetch Dashboard Data
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchDashboardData();
+    }
+  }, [isAuthenticated]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${BASE_URLS}/dashboard_api.php`);
+      if (response.data) {
+        setDashboardData({
+          todaySales: response.data.todaySales || 0,
+          totalProducts: response.data.totalProducts || 0,
+          totalCustomers: response.data.totalCustomers || 0,
+          pendingOrders: response.data.pendingOrders || 0,
+          totalStockWeight: response.data.totalStockWeight || 0,
+          stockValue: response.data.stockValue || 0,
+          totalSales: response.data.totalSales || 0,
+          totalProfit: response.data.totalProfit || 0
+        });
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error('Dashboard fetch error:', error);
+      setLoading(false);
+    }
+  };
 
   // Check login on refresh
   useEffect(() => {
@@ -412,7 +457,7 @@ const App = () => {
           background: `linear-gradient(135deg, #fafbfc 0%, #f0f2f5 50%, #e8eaf0 100%)`
         }}>
           <div style={{ animation: "fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)" }}>
-            {activePage === "dashboard" && <WelcomeOverview colors={colors} user={user} isMobile={isMobile} />}
+            {activePage === "dashboard" && <WelcomeOverview colors={colors} user={user} isMobile={isMobile} dashboardData={dashboardData} loading={loading} />}
             
             {activePage !== "dashboard" && (
               <div style={{
@@ -443,7 +488,7 @@ const App = () => {
 
 // --- SUB-COMPONENTS & STYLES ---
 
-const WelcomeOverview = ({ colors, user, isMobile }) => (
+const WelcomeOverview = ({ colors, user, isMobile, dashboardData, loading }) => (
   <div>
     <div style={{
       ...bannerStyle(colors),
@@ -533,10 +578,30 @@ const WelcomeOverview = ({ colors, user, isMobile }) => (
       marginBottom: isMobile ? "20px" : "30px"
     }}>
       {[
-        { title: "Today's Sales", value: "₹0", icon: <FaFileInvoiceDollar />, color: "#ffd700" },
-        { title: "Total Products", value: "0", icon: <FaBox />, color: "#ffe55c" },
-        { title: "Active Customers", value: "0", icon: <FaUsers />, color: "#ffec8b" },
-        { title: "Pending Orders", value: "0", icon: <FaShoppingCart />, color: "#daa520" }
+        { 
+          title: "Today's Sales", 
+          value: loading ? "Loading..." : `₹${dashboardData.todaySales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 
+          icon: <FaFileInvoiceDollar />, 
+          color: "#ffd700" 
+        },
+        { 
+          title: "Total Products", 
+          value: loading ? "Loading..." : dashboardData.totalProducts.toString(), 
+          icon: <FaBox />, 
+          color: "#ffe55c" 
+        },
+        { 
+          title: "Active Customers", 
+          value: loading ? "Loading..." : dashboardData.totalCustomers.toString(), 
+          icon: <FaUsers />, 
+          color: "#ffec8b" 
+        },
+        { 
+          title: "Pending Orders", 
+          value: loading ? "Loading..." : dashboardData.pendingOrders.toString(), 
+          icon: <FaShoppingCart />, 
+          color: "#daa520" 
+        }
       ].map((stat, index) => (
         <div 
           key={index} 

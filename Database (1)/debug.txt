@@ -1,0 +1,4332 @@
+
+
+==== LOG 2026-01-04 10:09:12 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:09:28 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:09:28 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:24:44 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:24:44 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:25:19 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:37:08 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:37:08 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:37:10 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:37:11 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:41:11 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:41:12 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:41:59 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:41:59 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:46:54 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:46:54 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:48:52 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:48:52 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:49:24 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:50:03 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:50:04 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:53:49 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 10:53:49 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:03:34 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:05:34 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:06:28 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:08:10 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:08:10 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:13:14 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:13:14 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:16:05 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:16:05 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:19:03 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:19:03 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:26:36 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:26:36 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:35:55 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:35:56 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:36:31 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:36:31 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:40:42 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:40:42 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:40:49 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:40:49 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:40:52 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:40:52 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:40:55 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:40:55 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:42:13 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:42:13 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:47:45 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:47:45 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:47:46 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:47:46 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:53:16 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:53:16 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:53:39 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:53:39 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:53:41 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:53:41 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:53:52 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 11:53:52 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 12:02:24 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 12:02:41 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 13:31:10 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 13:31:44 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 13:32:05 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 13:58:32 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 14:01:02 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 14:02:18 ====
+Array
+(
+    [METHOD] => POST
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 14:02:20 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 14:02:29 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 14:03:44 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 14:14:21 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 14:15:04 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-04 16:16:33 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-05 05:38:32 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-05 06:43:58 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-05 06:44:04 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-05 06:44:05 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-09 21:04:55 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-09 21:19:28 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-09 21:19:29 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-10 09:11:20 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-10 09:11:21 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-10 09:14:34 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-10 14:14:19 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-10 14:17:50 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-10 14:42:32 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-10 14:43:26 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-11 11:52:09 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-11 11:52:12 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-18 10:44:30 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-18 10:44:30 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-18 12:49:26 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-30 05:31:33 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-30 05:31:33 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-30 05:33:33 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-30 05:33:33 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-01-30 05:34:50 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-01 18:29:52 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-01 18:29:52 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-01 18:29:57 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-01 18:29:57 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-01 18:29:59 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-01 18:29:59 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-09 16:32:30 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-09 16:32:30 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-09 16:49:38 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-09 16:49:38 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-11 16:38:07 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-11 16:38:07 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-18 02:16:24 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-18 02:16:24 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-18 02:32:03 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-18 02:32:03 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-18 02:39:41 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-18 02:39:41 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 19:48:06 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 19:48:43 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 19:50:22 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 19:50:22 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 19:52:35 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 19:52:35 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 19:54:18 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 19:54:18 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 19:54:49 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 19:54:49 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 20:01:14 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 20:01:53 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 20:01:53 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 20:01:53 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 20:05:08 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-22 20:05:08 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-27 18:59:25 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-02-27 18:59:25 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-04 13:51:29 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-04 13:51:29 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 07:03:25 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 07:03:25 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 09:19:36 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 09:19:36 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 09:48:37 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 10:30:12 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 10:30:12 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 10:38:09 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 10:38:09 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 10:45:46 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 10:55:44 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 10:55:44 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 11:05:39 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 11:32:26 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 11:32:26 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 11:33:51 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 11:33:51 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:08:54 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:09:06 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:11:45 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:11:45 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:14:11 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:14:11 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:14:21 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:14:21 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:15:08 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:15:09 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:21:06 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:21:06 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:24:11 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:24:11 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:29:47 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:29:47 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:32:04 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:32:04 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:48:49 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:48:49 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:50:34 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:54:08 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:54:08 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:54:36 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:56:21 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:56:21 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:56:50 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 12:56:50 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 13:03:04 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 13:03:04 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 13:09:42 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 13:09:43 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 13:12:00 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 13:12:00 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 13:29:54 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 13:29:55 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 13:33:58 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 13:33:58 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 13:52:22 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-05 13:52:23 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-13 03:45:59 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-13 03:45:59 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-13 03:46:04 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-13 03:46:05 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-13 03:46:47 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-13 03:46:47 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-13 04:47:35 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-13 04:47:52 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-13 04:59:31 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-13 04:59:31 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-13 14:12:56 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-13 14:19:06 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-13 14:27:39 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-13 14:28:05 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 09:55:40 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 09:55:40 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 10:09:12 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 10:09:54 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 11:15:27 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 11:18:27 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 11:18:59 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 11:23:31 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 11:27:32 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 11:31:59 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 11:35:24 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 11:41:37 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 11:53:21 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 11:53:47 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 11:53:51 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 11:54:09 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 11:54:17 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-14 11:54:39 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-17 12:50:45 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-17 13:29:24 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-17 13:29:27 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-17 13:30:29 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-17 13:30:30 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-17 13:30:31 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-17 13:32:43 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-17 13:46:50 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-17 14:13:33 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-17 14:33:19 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-17 14:54:27 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-17 14:54:34 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-17 14:56:58 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-17 14:58:03 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-20 07:34:09 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-20 07:34:10 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-20 07:41:45 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-20 07:41:45 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 12:13:50 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 12:13:50 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:32:17 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:32:17 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:32:20 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:32:20 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:33:34 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:33:35 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:33:42 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:33:42 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:40:11 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:40:12 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:40:23 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:40:23 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:40:28 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:40:28 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:40:42 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:40:42 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:42:43 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:50:49 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:50:50 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:51:06 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:51:06 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 17:54:15 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 18:00:02 ====
+Array
+(
+    [METHOD] => PUT
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => {"customer_id":"8","customer_name":"ok","mobile":"1234567890","address":"785","dob":null,"id_proof_type":null,"id_proof_number":null,"id_proof_file":null,"created_at":"2025-12-01 02:21:33"}
+)
+
+
+==== LOG 2026-03-24 18:00:04 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 18:15:03 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 18:32:11 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 18:32:11 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 18:34:33 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-24 18:34:34 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-25 13:54:59 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-03-25 13:56:19 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:15:03 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:15:03 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:15:40 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:15:40 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:30:40 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:30:40 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:31:32 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:31:32 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:31:35 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:31:35 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:31:38 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:31:38 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:31:39 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:31:39 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:31:40 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:31:40 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:31:53 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:31:53 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:36:13 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:36:13 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:38:40 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:38:40 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:38:51 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:38:51 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:39:23 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:39:23 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:45:29 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:45:29 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:49:00 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:49:00 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:56:38 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 03:56:38 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 04:02:57 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 04:02:57 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 04:17:31 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-03 04:17:31 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:00:45 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:00:45 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:24:16 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:24:16 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:28:19 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:32:41 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:34:21 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:34:21 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:41:54 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:41:54 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:42:17 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:42:17 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:42:57 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:42:57 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:43:37 ====
+Array
+(
+    [METHOD] => PUT
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => {"customer_id":"15","customer_name":"Nikita Joshi","mobile":"7894561236","address":"Bhopal","dob":"2026-01-29","id_proof_type":"Aadhar Card","id_proof_number":"90000090","id_proof_file":null,"created_at":"2026-01-04 14:02:18"}
+)
+
+
+==== LOG 2026-04-05 06:43:38 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:43:43 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:43:43 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:57:51 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:57:51 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:58:24 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 06:58:24 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 07:00:13 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 07:00:13 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 07:35:23 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 07:35:23 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 07:37:36 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 07:37:37 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 07:44:09 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 08:45:48 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-05 08:45:48 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-15 18:32:22 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-15 18:32:22 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-16 04:56:58 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-16 04:56:58 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-16 04:57:31 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-16 04:57:31 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-16 04:58:04 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-16 04:58:05 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-16 05:13:46 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-16 05:13:46 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-16 05:14:59 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-16 05:14:59 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-16 05:41:21 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-16 05:41:21 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-16 05:41:32 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
+
+
+==== LOG 2026-04-16 05:41:32 ====
+Array
+(
+    [METHOD] => GET
+    [FILES] => Array
+        (
+        )
+
+    [INPUT] => 
+)
