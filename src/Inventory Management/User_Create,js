@@ -1,0 +1,181 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { FaUserPlus, FaUserEdit, FaTrash, FaUserShield, FaUsers, FaKey } from 'react-icons/fa';
+import BASE_URLS from './apiConfig';
+
+const USERS_API = `${BASE_URLS}/users_api.php`;
+
+export default function UserManagement() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({ id: "", username: "", password: "", full_name: "", role: "staff" });
+
+  const colors = { maroon: "#4A0E0E", gold: "#D4AF37", bg: "#FDF8F5" };
+
+  useEffect(() => { fetchUsers(); }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get(USERS_API);
+      setUsers(res.data.data || []);
+      setLoading(false);
+    } catch (err) { console.error(err); setLoading(false); }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (form.id) {
+        // UPDATE
+        await axios.put(USERS_API, form);
+        alert("User Updated Successfully!");
+      } else {
+        // CREATE
+        await axios.post(USERS_API, form);
+        alert("New User Created!");
+      }
+      resetForm();
+      fetchUsers();
+    } catch (err) { alert("Error saving user"); }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this user?")) {
+      await axios.delete(USERS_API, { data: { id } });
+      fetchUsers();
+    }
+  };
+
+  const resetForm = () => {
+    setForm({ id: "", username: "", password: "", full_name: "", role: "staff" });
+  };
+
+  if (loading) return <div style={{padding: '50px', textAlign: 'center'}}>Loading Users...</div>;
+
+  return (
+    <div style={{ padding: '30px', backgroundColor: colors.bg, minHeight: '100vh', fontFamily: 'sans-serif' }}>
+      
+      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <h2 style={{ color: colors.maroon, margin: 0 }}><FaUserShield /> User & Staff Management</h2>
+        <p style={{ color: '#666' }}>Manage permissions and system access</p>
+      </div>
+
+      <div style={styles.mainGrid}>
+        {/* --- LEFT SIDE: CREATE/EDIT FORM --- */}
+        <div style={styles.card}>
+          <h3 style={{ color: colors.maroon, borderBottom: `2px solid ${colors.gold}`, paddingBottom: '10px' }}>
+            {form.id ? "Edit User Details" : "Create New Account"}
+          </h3>
+          <form onSubmit={handleSubmit} style={styles.form}>
+            <div style={styles.inputGroup}>
+              <label>Full Name</label>
+              <input 
+                value={form.full_name} 
+                onChange={e => setForm({...form, full_name: e.target.value})} 
+                placeholder="Staff Member Name" required style={styles.input}
+              />
+            </div>
+
+            <div style={styles.inputGroup}>
+              <label>Username (Login ID)</label>
+              <input 
+                value={form.username} 
+                onChange={e => setForm({...form, username: e.target.value})} 
+                placeholder="unique_username" required style={styles.input}
+                disabled={form.id} // Username edit nahi hona chahiye logic wise
+              />
+            </div>
+
+            <div style={styles.inputGroup}>
+              <label>Password</label>
+              <div style={{position: 'relative'}}>
+                <FaKey style={{position: 'absolute', left: '12px', top: '14px', color: '#ccc'}} />
+                <input 
+                  type="text"
+                  value={form.password} 
+                  onChange={e => setForm({...form, password: e.target.value})} 
+                  placeholder="Set Password" required style={{...styles.input, paddingLeft: '35px'}}
+                />
+              </div>
+            </div>
+
+            <div style={styles.inputGroup}>
+              <label>System Role</label>
+              <select 
+                value={form.role} 
+                onChange={e => setForm({...form, role: e.target.value})} 
+                style={styles.input}
+              >
+                <option value="staff">Staff (Limited Access)</option>
+                <option value="admin">Admin (Full Access)</option>
+              </select>
+            </div>
+
+            <button type="submit" style={styles.saveBtn}>
+              {form.id ? "Update User" : "Add User to System"}
+            </button>
+            {form.id && <button type="button" onClick={resetForm} style={styles.cancelBtn}>Cancel Edit</button>}
+          </form>
+        </div>
+
+        {/* --- RIGHT SIDE: USERS LIST --- */}
+        <div style={styles.tableCard}>
+          <div style={{padding: '20px', background: colors.maroon, color: colors.gold, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px'}}>
+            <FaUsers /> Current System Users
+          </div>
+          <table width="100%" cellPadding="15" style={{ borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={styles.thRow}>
+                <th>NAME</th>
+                <th>USERNAME</th>
+                <th>ROLE</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u) => (
+                <tr key={u.id} style={styles.tr}>
+                  <td>
+                    <div style={{fontWeight: 'bold'}}>{u.full_name}</div>
+                    <small style={{color: '#999'}}>Joined: {new Date(u.created_at).toLocaleDateString()}</small>
+                  </td>
+                  <td><code style={styles.userCode}>{u.username}</code></td>
+                  <td>
+                    <span style={{
+                      ...styles.roleBadge, 
+                      backgroundColor: u.role === 'admin' ? '#4A0E0E' : '#eee',
+                      color: u.role === 'admin' ? '#D4AF37' : '#333'
+                    }}>
+                      {u.role.toUpperCase()}
+                    </span>
+                  </td>
+                  <td>
+                    <button onClick={() => setForm(u)} style={styles.editBtn}><FaUserEdit /></button>
+                    <button onClick={() => handleDelete(u.id)} style={styles.deleteBtn}><FaTrash /></button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const styles = {
+  mainGrid: { display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px', alignItems: 'start' },
+  card: { background: '#fff', padding: '25px', borderRadius: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' },
+  form: { display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' },
+  inputGroup: { display: 'flex', flexDirection: 'column', gap: '5px' },
+  input: { padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px', outline: 'none' },
+  saveBtn: { background: '#4A0E0E', color: '#D4AF37', border: 'none', padding: '14px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.3s' },
+  cancelBtn: { background: 'transparent', border: 'none', color: '#666', marginTop: '10px', cursor: 'pointer', textDecoration: 'underline' },
+  tableCard: { background: '#fff', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 5px 20px rgba(0,0,0,0.05)' },
+  thRow: { textAlign: 'left', background: '#f8f9fa', fontSize: '12px', borderBottom: '1px solid #eee' },
+  tr: { borderBottom: '1px solid #f9f9f9' },
+  userCode: { background: '#f0f0f0', padding: '2px 6px', borderRadius: '4px', fontSize: '13px' },
+  roleBadge: { padding: '4px 10px', borderRadius: '50px', fontSize: '10px', fontWeight: 'bold' },
+  editBtn: { background: '#3498db', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', marginRight: '5px', cursor: 'pointer' },
+  deleteBtn: { background: '#e74c3c', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }
+};

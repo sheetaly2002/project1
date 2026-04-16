@@ -1,0 +1,702 @@
+<?php
+header("Content-Type: application/json");
+include "config.php";
+
+$method = $_SERVER["REQUEST_METHOD"];
+
+// Convert JSON to array
+$input = json_decode(file_get_contents("php://input"), true);
+
+
+// -------------------------------------------------------------------
+// CREATE CATEGORY  (POST)
+// -------------------------------------------------------------------
+if ($method == "POST") {
+
+    $category = $input["category_name"];
+    $subcategory = $input["subcategory_name"];
+
+    $sql = "INSERT INTO categories (category_name, subcategory_name)
+            VALUES ('$category', '$subcategory')";
+
+    if ($conn->query($sql)) {
+        echo json_encode(["status" => "success", "message" => "Category added"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => $conn->error]);
+    }
+    exit;
+}
+
+
+// -------------------------------------------------------------------
+// READ ALL CATEGORIES (GET)
+// -------------------------------------------------------------------
+if ($method == "GET") {
+
+    $sql = "SELECT * FROM categories ORDER BY id DESC";
+    $result = $conn->query($sql);
+
+    $data = [];
+    while ($row = $result->fetch_assoc()) {
+        $data[] = $row;
+    }
+
+    echo json_encode(["status" => "success", "categories" => $data]);
+    exit;
+}
+
+
+
+// -------------------------------------------------------------------
+// UPDATE CATEGORY (PUT)
+// -------------------------------------------------------------------
+if ($method == "PUT") {
+
+    $id = $input["id"];
+    $category = $input["category_name"];
+    $subcategory = $input["subcategory_name"];
+
+    $sql = "UPDATE categories SET 
+                category_name='$category',
+                subcategory_name='$subcategory'
+            WHERE id=$id";
+
+    if ($conn->query($sql)) {
+        echo json_encode(["status" => "success", "message" => "Category updated"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => $conn->error]);
+    }
+    exit;
+}
+
+
+
+// -------------------------------------------------------------------
+// DELETE CATEGORY (DELETE)
+// -------------------------------------------------------------------
+if ($method == "DELETE") {
+
+    $id = $input["id"];
+
+    $sql = "DELETE FROM categories WHERE id=$id";
+
+    if ($conn->query($sql)) {
+        echo json_encode(["status" => "success", "message" => "Category deleted"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => $conn->error]);
+    }
+    exit;
+}
+
+
+
+// -------------------------------------------------------------------
+// If method is not allowed
+// -------------------------------------------------------------------
+echo json_encode(["status" => "error", "message" => "Invalid Request Method"]);
+?>
+//products
+<?php
+include "config.php";
+
+/* =========================
+   FUNCTIONS
+========================= */
+
+// 🔹 AUTO BARCODE GENERATE
+function generateBarcode() {
+    return "JW" . date("Y") . rand(100000, 999999);
+}
+
+// 🔹 AUTO HSN GENERATE
+function generateHSN($purity) {
+    if (strpos($purity, '22K') !== false || strpos($purity, '18K') !== false) {
+        return "7113"; // Gold Jewellery
+    } elseif (stripos($purity, 'Silver') !== false) {
+        return "7114"; // Silver Jewellery
+    } else {
+        return "7116"; // Diamond / Others
+    }
+}
+
+$method = $_SERVER['REQUEST_METHOD'];
+
+switch ($method) {
+
+    /* =========================
+       CREATE PRODUCT
+    ========================= */
+    case "POST":
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        if (empty($data['category_id']) || empty($data['product_name']) || empty($data['purity'])) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Required fields missing"
+            ]);
+            exit;
+        }
+
+        $category_id       = $data['category_id'];
+        $product_name      = $data['product_name'];
+        $purity            = $data['purity'];
+        $default_weight    = $data['default_weight'] ?? 0;
+        $default_quantity  = $data['default_quantity'] ?? 1;
+
+        // AUTO GENERATE
+        $barcode_no = generateBarcode();
+        $hsn_code   = generateHSN($purity);
+
+        $sql = "INSERT INTO products
+                (category_id, product_name, barcode_no, purity, default_weight, default_quantity, hsn_code)
+                VALUES (?,?,?,?,?,?,?)";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param(
+            "isssdis",
+            $category_id,
+            $product_name,
+            $barcode_no,
+            $purity,
+            $default_weight,
+            $default_quantity,
+            $hsn_code
+        );
+
+        if ($stmt->execute()) {
+            echo json_encode([
+                "status" => "success",
+                "message" => "Product added successfully",
+                "barcode_no" => $barcode_no,
+                "hsn_code" => $hsn_code
+            ]);
+        } else {
+            echo json_encode([
+                "status" => "error",
+                "message" => $stmt->error
+            ]);
+        }
+        break;
+
+    /* =========================
+       READ ALL PRODUCTS
+    ========================= */
+    case "GET":
+        $sql = "SELECT p.*, c.category_name, c.subcategory_name
+                FROM products p
+                JOIN categories c ON p.category_id = c.id
+                ORDER BY p.product_id DESC";
+
+        $result = $conn->query($sql);
+        $products = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $products[] = $row;
+        }
+
+        echo json_encode([
+            "status" => "success",
+            "data" => $products
+        ]);
+        break;
+
+    /* =========================
+       UPDATE PRODUCT
+    ========================= */
+    case "PUT":
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        if (empty($data['product_id'])) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Product ID required"
+            ]);
+            exit;
+        }
+
+        $product_id        = $data['product_id'];
+        $category_id       = $data['category_id'];
+        $product_name      = $data['product_name'];
+        $purity            = $data['purity'];
+        $default_weight    = $data['default_weight'] ?? 0;
+        $default_quantity  = $data['default_quantity'] ?? 1;
+
+        $hsn_code = generateHSN($purity);
+
+        $sql = "UPDATE products SET
+                category_id = ?,
+                product_name = ?,
+                purity = ?,
+                default_weight = ?,
+                default_quantity = ?,
+                hsn_code = ?
+                WHERE product_id = ?";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param(
+            "issdisi",
+            $category_id,
+            $product_name,
+            $purity,
+            $default_weight,
+            $default_quantity,
+            $hsn_code,
+            $product_id
+        );
+
+        if ($stmt->execute()) {
+            echo json_encode([
+                "status" => "success",
+                "message" => "Product updated successfully"
+            ]);
+        } else {
+            echo json_encode([
+                "status" => "error",
+                "message" => $stmt->error
+            ]);
+        }
+        break;
+
+    /* =========================
+       DELETE PRODUCT
+    ========================= */
+    case "DELETE":
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        if (empty($data['product_id'])) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Product ID required"
+            ]);
+            exit;
+        }
+
+        $product_id = $data['product_id'];
+
+        $sql = "DELETE FROM products WHERE product_id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $product_id);
+
+        if ($stmt->execute()) {
+            echo json_encode([
+                "status" => "success",
+                "message" => "Product deleted successfully"
+            ]);
+        } else {
+            echo json_encode([
+                "status" => "error",
+                "message" => $stmt->error
+            ]);
+        }
+        break;
+
+    default:
+        echo json_encode([
+            "status" => "error",
+            "message" => "Invalid Request Method"
+        ]);
+}
+?>
+//opening stock
+<?php
+header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+
+include "config.php";
+$method = $_SERVER['REQUEST_METHOD'];
+
+/* =================== HELPER: UPSERT STOCK =================== */
+function upsertStock($conn, $product_id, $opening_stock_id, $net_weight, $quantity, $rate, $making, $total_amount, $batch_date = null) {
+    $batch_date = $batch_date ?? date("Y-m-d H:i:s");
+
+    $stmt = $conn->prepare("SELECT stock_id FROM stock WHERE batch_type='opening' AND source_id=?");
+    $stmt->bind_param("i", $opening_stock_id);
+    $stmt->execute();
+    $stock = $stmt->get_result()->fetch_assoc();
+
+    if ($stock) {
+        // UPDATE existing stock
+        $u = $conn->prepare("
+            UPDATE stock SET
+                net_weight=?,
+                remaining_weight=?,
+                quantity=?,
+                remaining_qty=?,
+                rate_per_gram=?,
+                making_charge=?,
+                total_amount=?,
+                batch_date=?
+            WHERE stock_id=?
+        ");
+        $u->bind_param("dddddddsi", $net_weight, $net_weight, $quantity, $quantity, $rate, $making, $total_amount, $batch_date, $stock['stock_id']);
+        $u->execute();
+    } else {
+        // INSERT new stock
+        $batch_type = 'opening';
+        $i = $conn->prepare("
+            INSERT INTO stock
+            (product_id,batch_type,source_id,batch_date,net_weight,remaining_weight,quantity,remaining_qty,rate_per_gram,making_charge,total_amount)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?)
+        ");
+        $i->bind_param("isissddiddd", $product_id, $batch_type, $opening_stock_id, $batch_date, $net_weight, $net_weight, $quantity, $quantity, $rate, $making, $total_amount);
+        $i->execute();
+    }
+}
+
+/* =================== CREATE / UPDATE OPENING STOCK =================== */
+if ($method === "POST") {
+    $d = json_decode(file_get_contents("php://input"), true);
+
+    $product_id   = (int)($d['product_id'] ?? 0);
+    $net_weight   = (float)($d['net_weight'] ?? 0);
+    $quantity     = (float)($d['quantity'] ?? 0);
+    $rate         = (float)($d['rate_per_gram'] ?? 0);
+    $making       = (float)($d['making_charge'] ?? 0);
+    $total_amount = (float)($d['total_amount'] ?? 0);
+    $entry_date   = $d['entry_date'] ?? date("Y-m-d H:i:s");
+
+    $conn->begin_transaction();
+    try {
+        // Check if opening_stock exists for this product_id
+        $c = $conn->prepare("SELECT * FROM opening_stock WHERE product_id=?");
+        $c->bind_param("i", $product_id);
+        $c->execute();
+        $old = $c->get_result()->fetch_assoc();
+
+        if ($old) {
+            // UPDATE existing opening_stock
+            $u = $conn->prepare("
+                UPDATE opening_stock SET
+                    net_weight=?,
+                    quantity=?,
+                    rate_per_gram=?,
+                    making_charge=?,
+                    total_amount=?,
+                    entry_date=?
+                WHERE opening_stock_id=?
+            ");
+            $u->bind_param("dddddsi", $net_weight, $quantity, $rate, $making, $total_amount, $entry_date, $old['opening_stock_id']);
+            $u->execute();
+            $opening_stock_id = $old['opening_stock_id'];
+        } else {
+            // INSERT new opening_stock
+            $i = $conn->prepare("
+                INSERT INTO opening_stock
+                (product_id,net_weight,quantity,rate_per_gram,making_charge,total_amount,entry_date)
+                VALUES (?,?,?,?,?,?,?)
+            ");
+            $i->bind_param("ididdis", $product_id, $net_weight, $quantity, $rate, $making, $total_amount, $entry_date);
+            $i->execute();
+            $opening_stock_id = $conn->insert_id;
+        }
+
+        // UPSERT stock
+        upsertStock($conn, $product_id, $opening_stock_id, $net_weight, $quantity, $rate, $making, $total_amount, $entry_date);
+
+        $conn->commit();
+        echo json_encode(["status" => "success", "message" => "Opening stock inserted/updated successfully"]);
+    } catch (Exception $e) {
+        $conn->rollback();
+        echo json_encode(["status" => "error", "message" => $e->getMessage()]);
+    }
+    exit;
+}
+
+/* =================== READ ALL =================== */
+if ($method === "GET") {
+    $q = $conn->query("
+        SELECT os.*, p.product_name, p.purity
+        FROM opening_stock os
+        JOIN products p ON p.product_id=os.product_id
+        ORDER BY os.opening_stock_id DESC
+    ");
+    $data = [];
+    while ($r = $q->fetch_assoc()) $data[] = $r;
+    echo json_encode(["status" => "success", "data" => $data]);
+    exit;
+}
+
+/* =================== DELETE =================== */
+if ($method === "DELETE") {
+    $d = json_decode(file_get_contents("php://input"), true);
+    $id = (int)($d['opening_stock_id'] ?? 0);
+
+    $conn->begin_transaction();
+    try {
+        // Delete stock first
+        $conn->query("DELETE FROM stock WHERE batch_type='opening' AND source_id=$id");
+        // Delete opening_stock
+        $conn->query("DELETE FROM opening_stock WHERE opening_stock_id=$id");
+
+        $conn->commit();
+        echo json_encode(["status" => "success", "message" => "Deleted successfully"]);
+    } catch (Exception $e) {
+        $conn->rollback();
+        echo json_encode(["status" => "error", "message" => $e->getMessage()]);
+    }
+    exit;
+}
+
+echo json_encode(["status" => "error", "message" => "Invalid request"]);
+?>
+//purchase
+<?php
+header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+
+include "config.php";
+$method = $_SERVER['REQUEST_METHOD'];
+
+/* ==================================================
+   HELPER : UPSERT STOCK (NO DELETE)
+================================================== */
+function upsertStock(
+    $conn,
+    $product_id,
+    $source_id,
+    $net_weight,
+    $quantity,
+    $rate,
+    $making,
+    $batch_type,
+    $date
+){
+    $total_amount = ($net_weight * $rate) + $making;
+
+    // check existing stock
+    $c = $conn->prepare("
+        SELECT stock_id 
+        FROM stock 
+        WHERE batch_type=? AND source_id=? AND product_id=?
+    ");
+    $c->bind_param("sii", $batch_type, $source_id, $product_id);
+    $c->execute();
+    $old = $c->get_result()->fetch_assoc();
+
+    if($old){
+        // UPDATE stock
+        $u = $conn->prepare("
+            UPDATE stock SET
+                net_weight=?,
+                remaining_weight=?,
+                quantity=?,
+                remaining_qty=?,
+                rate_per_gram=?,
+                making_charge=?,
+                total_amount=?,
+                batch_date=?
+            WHERE stock_id=?
+        ");
+        $u->bind_param(
+            "dddddddsi",
+            $net_weight,
+            $net_weight,
+            $quantity,
+            $quantity,
+            $rate,
+            $making,
+            $total_amount,
+            $date,
+            $old['stock_id']
+        );
+        $u->execute();
+    } else {
+        // INSERT stock
+        $i = $conn->prepare("
+            INSERT INTO stock
+            (product_id,batch_type,source_id,batch_date,
+             net_weight,remaining_weight,quantity,remaining_qty,
+             rate_per_gram,making_charge,total_amount)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?)
+        ");
+        $i->bind_param(
+            "isissddiddd",
+            $product_id,
+            $batch_type,
+            $source_id,
+            $date,
+            $net_weight,
+            $net_weight,
+            $quantity,
+            $quantity,
+            $rate,
+            $making,
+            $total_amount
+        );
+        $i->execute();
+    }
+}
+
+/* ==================================================
+   CREATE / UPDATE PURCHASE
+================================================== */
+if($method === "POST"){
+    $conn->begin_transaction();
+    try{
+
+        $purchase_id   = $_POST['purchase_id'] ?? null;
+        $supplier_id   = $_POST['supplier_id'];
+        $bill_no       = $_POST['bill_no'];
+        $purchase_date = $_POST['purchase_date'];
+        $tax_type      = $_POST['tax_type'];
+        $tax_percent   = floatval($_POST['tax_percent']);
+        $items         = json_decode($_POST['items'], true);
+
+        if(!$items) throw new Exception("Items missing");
+
+        /* ===== CALCULATE TOTAL ===== */
+        $sub_total = 0;
+        foreach($items as $i){
+            $sub_total += floatval($i['total_amount']);
+        }
+        $tax_amount   = ($sub_total * $tax_percent) / 100;
+        $grand_total  = $sub_total + $tax_amount;
+
+        /* ===== PURCHASE HEADER ===== */
+        if($purchase_id){
+            // UPDATE purchase
+            $stmt = $conn->prepare("
+                UPDATE purchases SET
+                    supplier_id=?,
+                    bill_no=?,
+                    purchase_date=?,
+                    tax_type=?,
+                    tax_percent=?,
+                    tax_amount=?,
+                    total_amount=?
+                WHERE purchase_id=?
+            ");
+            $stmt->bind_param(
+                "isssdddd",
+                $supplier_id,
+                $bill_no,
+                $purchase_date,
+                $tax_type,
+                $tax_percent,
+                $tax_amount,
+                $grand_total,
+                $purchase_id
+            );
+            $stmt->execute();
+
+            // delete old items ONLY
+            $conn->query("DELETE FROM purchase_items WHERE purchase_id=$purchase_id");
+
+        } else {
+            // INSERT purchase
+            $stmt = $conn->prepare("
+                INSERT INTO purchases
+                (supplier_id,bill_no,purchase_date,tax_type,tax_percent,tax_amount,total_amount)
+                VALUES (?,?,?,?,?,?,?)
+            ");
+            $stmt->bind_param(
+                "isssddd",
+                $supplier_id,
+                $bill_no,
+                $purchase_date,
+                $tax_type,
+                $tax_percent,
+                $tax_amount,
+                $grand_total
+            );
+            $stmt->execute();
+            $purchase_id = $conn->insert_id;
+        }
+
+        /* ===== ITEMS + STOCK ===== */
+        foreach($items as $i){
+            $pid    = intval($i['product_id']);
+            $w      = floatval($i['net_weight']);
+            $q      = floatval($i['quantity']);
+            $rate   = floatval($i['rate_per_gram']);
+            $make   = floatval($i['making_charge']);
+            $total  = floatval($i['total_amount']);
+
+            // insert item
+            $stmt = $conn->prepare("
+                INSERT INTO purchase_items
+                (purchase_id,product_id,net_weight,quantity,rate_per_gram,making_charge,total_amount)
+                VALUES (?,?,?,?,?,?,?)
+            ");
+            $stmt->bind_param(
+                "iiidddd",
+                $purchase_id,
+                $pid,
+                $w,
+                $q,
+                $rate,
+                $make,
+                $total
+            );
+            $stmt->execute();
+
+            // UPSERT stock ✅
+            upsertStock(
+                $conn,
+                $pid,
+                $purchase_id,
+                $w,
+                $q,
+                $rate,
+                $make,
+                'purchase',
+                $purchase_date
+            );
+        }
+
+        $conn->commit();
+        echo json_encode(["status"=>"success","message"=>"Purchase saved"]);
+
+    } catch(Exception $e){
+        $conn->rollback();
+        echo json_encode(["status"=>"error","message"=>$e->getMessage()]);
+    }
+    exit;
+}
+
+/* ==================================================
+   READ PURCHASES
+================================================== */
+if($method === "GET"){
+    $arr = [];
+    $res = $conn->query("SELECT * FROM purchases ORDER BY purchase_id DESC");
+    while($p = $res->fetch_assoc()){
+        $pid = $p['purchase_id'];
+        $items = [];
+        $r2 = $conn->query("SELECT * FROM purchase_items WHERE purchase_id=$pid");
+        while($i = $r2->fetch_assoc()) $items[] = $i;
+        $p['items'] = $items;
+        $arr[] = $p;
+    }
+    echo json_encode(["status"=>"success","data"=>$arr]);
+    exit;
+}
+
+/* ==================================================
+   DELETE PURCHASE
+================================================== */
+if($method === "DELETE"){
+    $d = json_decode(file_get_contents("php://input"),true);
+    $pid = $d['purchase_id'];
+
+    $conn->begin_transaction();
+    try{
+        $conn->query("DELETE FROM stock WHERE batch_type='purchase' AND source_id=$pid");
+        $conn->query("DELETE FROM purchase_items WHERE purchase_id=$pid");
+        $conn->query("DELETE FROM purchases WHERE purchase_id=$pid");
+        $conn->commit();
+        echo json_encode(["status"=>"success"]);
+    }catch(Exception $e){
+        $conn->rollback();
+        echo json_encode(["status"=>"error","message"=>$e->getMessage()]);
+    }
+    exit;
+}
+
+echo json_encode(["status"=>"error","message"=>"Invalid request"]);
+?>
+rukna abhi dusre m stcok sales customer suupplie kia apibhi behjtihu

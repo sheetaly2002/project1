@@ -1,0 +1,207 @@
+body{
+background:#f7f3eb;
+font-family:Arial;
+}
+
+.page{
+padding:20px;
+}
+
+.layout{
+display:grid;
+grid-template-columns:350px 1fr;
+gap:20px;
+}
+
+/* FORM */
+
+.formCard{
+background:white;
+border-radius:14px;
+box-shadow:0 5px 20px rgba(0,0,0,0.08);
+overflow:hidden;
+}
+
+.formHeader{
+padding:15px;
+font-weight:bold;
+color:white;
+display:flex;
+justify-content:space-between;
+}
+
+.formHeader.add{
+background:#3b2a1e;
+}
+
+.formHeader.edit{
+background:#c08b2c;
+}
+
+.formBody{
+padding:20px;
+display:flex;
+flex-direction:column;
+gap:12px;
+}
+
+.formBody input,
+.formBody select,
+.formBody textarea{
+padding:10px;
+border:1px solid #ddd;
+border-radius:6px;
+}
+
+.grid2{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+
+.amountBox{
+background:#3b2a1e;
+color:white;
+padding:15px;
+border-radius:8px;
+}
+
+.amountBox h3{
+color:#e0b44c;
+margin:0;
+}
+
+.amountBox input{
+margin-top:10px;
+}
+
+.due{
+color:#ff6b6b;
+font-weight:bold;
+}
+
+.uploadBox{
+border:2px dashed #d4c2a5;
+padding:10px;
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.saveBtn{
+background:#c08b2c;
+color:white;
+border:none;
+padding:12px;
+border-radius:6px;
+font-weight:bold;
+cursor:pointer;
+}
+
+/* TABLE */
+
+.tableCard{
+background:white;
+border-radius:14px;
+box-shadow:0 5px 20px rgba(0,0,0,0.08);
+overflow:hidden;
+}
+
+.tableHeader{
+padding:15px;
+background:#3b2a1e;
+color:white;
+display:flex;
+gap:10px;
+align-items:center;
+}
+
+.tableWrap{
+overflow:auto;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th{
+background:#f5efe3;
+padding:12px;
+font-size:13px;
+}
+
+td{
+padding:12px;
+border-top:1px solid #eee;
+}
+
+.editBtn{
+background:#e8f2ff;
+border:none;
+padding:6px;
+margin-right:5px;
+cursor:pointer;
+}
+
+.deleteBtn{
+background:#ffe8e8;
+border:none;
+padding:6px;
+cursor:pointer;
+}
+
+.dueText{
+color:#e53935;
+font-weight:bold;
+}
+
+.paidText{
+color:#2e7d32;
+font-weight:bold;
+}
+
+/* PAGINATION */
+
+.pagination{
+display:flex;
+justify-content:center;
+gap:20px;
+padding:15px;
+}
+
+.pagination button{
+background:#c08b2c;
+border:none;
+color:white;
+padding:8px 14px;
+cursor:pointer;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:900px){
+
+.layout{
+grid-template-columns:1fr;
+}
+.oldFile{
+display:flex;
+align-items:center;
+justify-content:space-between;
+background:#f5efe3;
+padding:8px;
+border-radius:6px;
+margin-bottom:6px;
+}
+
+.viewBtn{
+background:#b48c36;
+color:white;
+padding:4px 10px;
+text-decoration:none;
+border-radius:4px;
+font-size:12px;
+}
+
+}

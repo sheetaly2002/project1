@@ -1,0 +1,261 @@
+/* --- Global & Theme --- */
+.stock-page {
+    background: #faf6f1;
+    padding: 20px;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+}
+
+/* --- Header Section --- */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    gap: 15px;
+}
+
+.header h2 {
+    color: #b48c36;
+    font-weight: 800;
+    font-style: italic;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.add-btn {
+    background: linear-gradient(45deg, #d4af37, #ff4fa3);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    transition: 0.3s ease;
+}
+
+.add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+/* --- Filters Section --- */
+.filters {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.search input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+    background: transparent;
+}
+
+.filters select {
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background-color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* --- Table & Card System --- */
+.table-box {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: #fff3dc;
+}
+
+th {
+    padding: 18px 15px;
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #886b1e;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+td {
+    padding: 16px 15px;
+    border-bottom: 1px solid #f8fafc;
+    font-size: 14px;
+}
+
+/* --- Modal & Form Layout --- */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 15px;
+}
+
+.modal-box {
+    background: white;
+    padding: 25px;
+    border-radius: 24px;
+    width: 500px;
+    max-width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.form-grid input, 
+.form-grid select {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.total {
+    background: #fff3dc;
+    padding: 15px;
+    text-align: center;
+    font-weight: 800;
+    border-radius: 12px;
+    grid-column: span 2;
+    color: #b48c36;
+    font-size: 1.1rem;
+}
+
+.save-btn {
+    background: linear-gradient(45deg, #1a1a1a, #333);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    grid-column: span 2;
+    font-size: 1rem;
+}
+
+/* --- Pagination --- */
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.pagination button {
+    padding: 8px 14px;
+    border: none;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.pagination .active {
+    background: #d4af37;
+    color: white;
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filters {
+        grid-template-columns: 1fr;
+    }
+
+    /* Table hide on mobile, show as cards */
+    table thead {
+        display: none;
+    }
+
+    table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #f1f5f9;
+        border-radius: 16px;
+        background: white;
+        padding: 10px;
+    }
+
+    table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        border: none;
+        text-align: right;
+    }
+
+    /* Label generation for cards */
+    table td::before {
+        content: attr(data-label);
+        font-weight: 800;
+        color: #94a3b8;
+        font-size: 10px;
+        text-transform: uppercase;
+        margin-right: 10px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-grid .total, 
+    .form-grid .save-btn {
+        grid-column: span 1;
+    }
+
+    .modal-box {
+        padding: 20px;
+    }
+}
