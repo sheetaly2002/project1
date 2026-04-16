@@ -1025,6 +1025,26 @@ ALTER TABLE `s_purchase_bills`
 ALTER TABLE `s_stock`
   ADD CONSTRAINT `s_stock_ibfk_1` FOREIGN KEY (`purchase_bill_id`) REFERENCES `s_purchase_bills` (`id`),
   ADD CONSTRAINT `s_stock_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `s_products` (`id`);
+
+-- ============================================
+-- PASSWORD SECURITY UPGRADE SCRIPT
+-- Run hash_passwords.php to secure all passwords
+-- ============================================
+
+-- Check current password status
+SELECT 
+    COUNT(*) as total_users,
+    SUM(CASE WHEN password LIKE '$2y$%' THEN 1 ELSE 0 END) as hashed,
+    SUM(CASE WHEN password NOT LIKE '$2y$%' THEN 1 ELSE 0 END) as plain_text
+FROM users;
+
+-- List all users (for verification)
+SELECT id, username, full_name, role, created_at FROM users;
+
+-- IMPORTANT: After running hash_passwords.php, verify with:
+-- SELECT id, username, password, full_name, role FROM users;
+-- All passwords should start with "$2y$"
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

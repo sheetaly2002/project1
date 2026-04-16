@@ -3,8 +3,10 @@ import axios from 'axios';
 import BASE_URLS from './Inventory Management/apiConfig';
 import { 
   FaFileInvoiceDollar, FaWarehouse, FaBox, FaShoppingCart, 
-  FaUserTie, FaUsers, FaPlusSquare, FaChartLine, FaTags, FaBars, FaGem, FaWallet, FaTools, FaSignOutAlt, FaUserShield, FaTimes
+  FaUserTie, FaUsers, FaPlusSquare, FaChartLine, FaTags, FaBars, FaGem, FaWallet, FaTools, FaSignOutAlt, FaUserShield, FaTimes,
+  FaWeightHanging, FaIndianRupeeSign
 } from "react-icons/fa";
+import { Fa6 } from 'react-icons/fa6';
 import { GiThreeLeaves } from "react-icons/gi";
 
 // --- IMPORT SECTIONS ---
@@ -573,8 +575,8 @@ const WelcomeOverview = ({ colors, user, isMobile, dashboardData, loading }) => 
     {/* Quick Stats Cards */}
     <div style={{
       display: "grid",
-      gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(240px, 1fr))",
-      gap: isMobile ? "15px" : "20px",
+      gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(auto-fit, minmax(240px, 1fr))",
+      gap: isMobile ? "12px" : "20px",
       marginBottom: isMobile ? "20px" : "30px"
     }}>
       {[
@@ -601,6 +603,18 @@ const WelcomeOverview = ({ colors, user, isMobile, dashboardData, loading }) => 
           value: loading ? "Loading..." : dashboardData.pendingOrders.toString(), 
           icon: <FaShoppingCart />, 
           color: "#daa520" 
+        },
+        { 
+          title: "Stock Weight", 
+          value: loading ? "Loading..." : `${dashboardData.totalStockWeight.toFixed(3)} g`, 
+          icon: <FaWeightHanging />, 
+          color: "#cd7f32" 
+        },
+        { 
+          title: "Stock Value", 
+          value: loading ? "Loading..." : `₹${dashboardData.stockValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 
+          icon: <FaIndianRupeeSign />, 
+          color: "#b8860b" 
         }
       ].map((stat, index) => (
         <div 
