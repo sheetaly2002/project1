@@ -235,6 +235,9 @@ const handleConfirmPrint = async () => {
         const resData = await res.json();
         const items = Array.isArray(resData.items) ? resData.items : [];
         
+        // Debug: Log the items data to see what fields are available
+        console.log("Print Items Data:", items);
+        
         // Final Calculations
         const subTotal = parseFloat(selectedSaleForPrint.sub_total || 0);
         const taxAmount = parseFloat(selectedSaleForPrint.tax_amount || 0);
@@ -273,15 +276,19 @@ const handleConfirmPrint = async () => {
                       padding: 0;
                       position: relative;
                       background: #fff;
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
                   }
 
                   .content-wrapper { 
-                      width: 100%; 
+                      width: 90%; 
                       display: flex; 
                       flex-direction: column;
                       position: relative;
                       z-index: 1;
-                      padding: ${paperSize === 'A5' ? '8mm 12mm' : '12mm 16mm'};
+                      padding: ${paperSize === 'A5' ? '6mm 8mm' : '10mm 12mm'};
+                      margin-top: ${paperSize === 'A5' ? '5mm' : '8mm'};
                   }
 
                   /* Professional Invoice Header */
@@ -488,6 +495,37 @@ const handleConfirmPrint = async () => {
                                   const makingTotal = parseFloat(item.making_total) || 0;
                                   const totalAmount = (weight * rate) + makingTotal;
                                   const purity = item.purity || '22K';
+                                  let makingDisplay = '';
+                                  // Try to get making charge type and value from backend data
+                                  const mType = item.m_type || item.making_type || '';
+                                  const mValue = item.m_value || item.making_value || 0;
+                                  
+                                  if (mType === 'percent' && mValue) {
+                                      makingDisplay = `${mValue}%`;
+                                  } else if (mType === 'per_gram' && mValue) {
+                                      makingDisplay = `₹${mValue}/g`;
+                                  } else if (mType === 'fixed' && mValue) {
+                                      makingDisplay = `Fixed ₹${mValue}`;
+                                  } else if (makingTotal > 0) {
+                                      // Try to detect if it might be a percentage based on calculation
+                                      const weight = parseFloat(item.net_weight) || 0;
+                                      const rate = parseFloat(item.sale_rate) || 0;
+                                      const baseAmount = weight * rate;
+                                      
+                                      if (baseAmount > 0) {
+                                          const possiblePercent = (makingTotal / baseAmount) * 100;
+                                          // If it's a round number (like 5%, 10%, etc.), show as percentage
+                                          if (possiblePercent > 0 && possiblePercent <= 50 && possiblePercent === Math.round(possiblePercent)) {
+                                              makingDisplay = `${Math.round(possiblePercent)}%`;
+                                          } else {
+                                              makingDisplay = '₹' + makingTotal.toLocaleString('en-IN', {minimumFractionDigits: 2});
+                                          }
+                                      } else {
+                                          makingDisplay = '₹' + makingTotal.toLocaleString('en-IN', {minimumFractionDigits: 2});
+                                      }
+                                  } else {
+                                      makingDisplay = '₹0';
+                                  }
                                   return `
                                   <tr>
                                       <td style="font-weight: bold;">${i + 1}</td>
@@ -497,7 +535,7 @@ const handleConfirmPrint = async () => {
                                       </td>
                                       <td style="font-weight: 500;">${weight.toFixed(3)}</td>
                                       <td>₹${rate.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                                      <td>₹${makingTotal.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                                      <td>${makingDisplay}</td>
                                       <td align="right" style="font-weight: bold;">₹${totalAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                                   </tr>
                                   `;
@@ -704,15 +742,27 @@ const handleConfirmPrint = async () => {
                             />
                           </td>
                           <td className="text-center">
-                            <select
-                              className="table-select"
-                              value={item.m_type}
-                              onChange={(e) => updateRow(item.id, "m_type", e.target.value)}
-                            >
-                              <option value="fixed">Fixed</option>
-                              <option value="per_gram">Per Gram</option>
-                              <option value="percent">Percent</option>
-                            </select>
+                            {item.m_type === "percent" && item.m_value ? (
+                              <select
+                                className="table-select"
+                                value={item.m_type}
+                                onChange={(e) => updateRow(item.id, "m_type", e.target.value)}
+                              >
+                                <option value="fixed">Fixed</option>
+                                <option value="per_gram">Per Gram</option>
+                                <option value="percent">{item.m_value}%</option>
+                              </select>
+                            ) : (
+                              <select
+                                className="table-select"
+                                value={item.m_type}
+                                onChange={(e) => updateRow(item.id, "m_type", e.target.value)}
+                              >
+                                <option value="fixed">Fixed</option>
+                                <option value="per_gram">Per Gram</option>
+                                <option value="percent">Percent</option>
+                              </select>
+                            )}
                           </td>
                           <td className="text-center">
                             <input
