@@ -388,8 +388,11 @@ const [filteredProducts,setFilteredProducts]=useState([]);
 const [currentPage,setCurrentPage]=useState(1);
 const itemsPerPage=10;
 
+const [selectedItems,setSelectedItems]=useState([]);
+
 const fetchAllData=async()=>{
 
+try{
 const [m,s,p,b,st]=await Promise.all([
 
 axios.get(`${BASE_URLS}/categories_api.php?action=get_main`),
@@ -400,11 +403,18 @@ axios.get(`${BASE_URLS}/stock_api.php?action=get_all`)
 
 ]);
 
+console.log("API Responses:", { m: m.data, s: s.data, p: p.data, b: b.data, st: st.data });
+
 setMainCats(m.data||[]);
 setSubCats(s.data||[]);
 setAllProducts(p.data||[]);
 setBills(b.data||[]);
 setStockList(st.data||[]);
+
+}catch(error){
+console.error("Data Fetch Error:", error);
+alert("Failed to fetch data. Check console for details.");
+}
 
 };
 
@@ -574,36 +584,15 @@ setShowForm(true);
 
 };
 
-    const handlePrintTag = (item) => {
+    const handlePrintTag = (item, quantity = 1) => {
         const printWindow = window.open("", "_blank");
         const barcodeText = item.barcode || `SJ-${item.id}`;
-        const logoUrl = "https://upload.wikimedia.org/wikipedia/en/thumb/0/0b/Bureau_of_Indian_Standards_Logo.svg/1200px-Bureau_of_Indian_Standards_Logo.svg.png";
+        const logoUrl = "/FinalLogo.png";
 
-        printWindow.document.write(`
-          <html>
-            <head>
-              <link href="https://fonts.googleapis.com/css2?family=Hind:wght@700&family=Inter:wght@700&display=swap" rel="stylesheet">
-              <style>
-                @media print { body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
-                @page { size: 85mm 25mm; margin: 0 !important; }
-                * { box-sizing: border-box; margin: 0; padding: 0; }
-                body { width: 85mm; height: 25mm; display: flex; align-items: center; justify-content: center; background: #fff; font-family: 'Inter', sans-serif; }
-                .tag-wrapper { width: 82mm; height: 22mm; display: flex; border: 1.5px solid #d4af37; border-radius: 4px; overflow: hidden; background: white; }
-                .side-brand { width: 38mm; background: #1a1a1a !important; color: #d4af37 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2mm; border-right: 1.5px solid #d4af37; }
-                .hindi-title { font-family: 'Hind', sans-serif; font-size: 17px; color: #f1c40f !important; margin-bottom: 2px; }
-                .logo-icon { height: 6mm; width: auto; margin-bottom: 3px; }
-                .hallmark-text { font-size: 7.5px; color: #ffffff !important; font-weight: bold; border-top: 1px solid #d4af37; padding-top: 2px; }
-                .side-info { width: 44mm; padding: 2mm 4mm; display: flex; flex-direction: column; justify-content: center; background: #ffffff !important; }
-                .v-stack { display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; }
-                .item-line { font-size: 10px; font-weight: 800; color: #000 !important; text-transform: uppercase; }
-                .weight-line { font-size: 10px; font-weight: 700; color: #333 !important; }
-                .weight-line span { color: #777; font-weight: 400; margin-right: 4px; }
-                .barcode-area { text-align: center; }
-                .barcode-img { width: 100%; max-width: 35mm; height: 6.5mm; }
-                .barcode-txt { font-size: 8px; font-family: monospace; color: #444 !important; font-weight: bold; }
-              </style>
-            </head>
-            <body>
+        // Generate multiple tags
+        let tagsHtml = '';
+        for (let i = 0; i < quantity; i++) {
+            tagsHtml += `
               <div class="tag-wrapper">
                 <div class="side-brand">
                   <div class="hindi-title">श्रीजी ज्वेलर्स</div>
@@ -616,10 +605,42 @@ setShowForm(true);
                     <div class="weight-line"><span>Net Wt:</span>${parseFloat(item.net_weight).toFixed(3)}g</div>
                   </div>
                   <div class="barcode-area">
-                    <img class="barcode-img" src="https://bwipjs-api.metafloor.com/?bcid=code128&text=${barcodeText}&scale=2&height=10" />
+                    <img class="barcode-img" src="https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(barcodeText)}&scale=2&height=10&rotate=0" onerror="this.onerror=null; this.src='https://api.barcodeapi.org/api?text=${encodeURIComponent(barcodeText)}&type=code128'" />
                     <div class="barcode-txt">${barcodeText}</div>
                   </div>
                 </div>
+              </div>
+            `;
+        }
+
+        printWindow.document.write(`
+          <html>
+            <head>
+              <link href="https://fonts.googleapis.com/css2?family=Hind:wght@700&family=Inter:wght=700&display=swap" rel="stylesheet">
+              <style>
+                @media print { body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
+                @page { size: A4; margin: 10mm !important; }
+                * { box-sizing: border-box; margin: 0; padding: 0; }
+                body { background: #fff; font-family: 'Inter', sans-serif; padding: 10mm; }
+                .tags-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5mm; }
+                .tag-wrapper { width: 100%; height: 22mm; display: flex; border: 1.5px solid #d4af37; border-radius: 4px; overflow: hidden; background: white; }
+                .side-brand { width: 38mm; background: #1a1a1a !important; color: #d4af37 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2mm; border-right: 1.5px solid #d4af37; }
+                .hindi-title { font-family: 'Hind', sans-serif; font-size: 17px; color: #f1c40f !important; margin-bottom: 2px; }
+                .logo-icon { height: 6mm; width: auto; margin-bottom: 3px; }
+                .hallmark-text { font-size: 7.5px; color: #ffffff !important; font-weight: bold; border-top: 1px solid #d4af37; padding-top: 2px; }
+                .side-info { width: 44mm; padding: 2mm 4mm; display: flex; flex-direction: column; justify-content: center; background: #ffffff !important; }
+                .v-stack { display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; }
+                .item-line { font-size: 10px; font-weight: 800; color: #000 !important; text-transform: uppercase; }
+                .weight-line { font-size: 10px; font-weight: 700; color: #333 !important; }
+                .weight-line span { color: #777; font-weight: 400; margin-right: 4px; }
+                .barcode-area { text-align: center; }
+                .barcode-img { width: 100%; max-width: 35mm; height: 6.5mm; object-fit: contain; }
+                .barcode-txt { font-size: 8px; font-family: monospace; color: #444 !important; font-weight: bold; }
+              </style>
+            </head>
+            <body>
+              <div class="tags-container">
+                ${tagsHtml}
               </div>
               <script>window.onload = function() { setTimeout(() => { window.print(); window.close(); }, 500); };</script>
             </body>
@@ -736,7 +757,7 @@ onChange={(e)=>setCatFilter(e.target.value)}
 
 <button onClick={()=>handleEdit(item)}> <Edit3 size={16}/> </button>
 
-<button onClick={()=>handlePrintTag(item)}> <Printer size={16}/> </button>
+<button onClick={()=>{const qty = prompt("Enter number of barcode copies to print:", "2"); if(qty && !isNaN(qty) && qty > 0) handlePrintTag(item, parseInt(qty));}}> <Printer size={16}/> </button>
 
 <button
 onClick={()=>{
