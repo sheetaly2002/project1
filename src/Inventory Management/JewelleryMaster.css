@@ -1,0 +1,47 @@
+* { box-sizing: border-box; }
+.jm-page { min-height: 100vh; background: radial-gradient(circle at top left, #fff6cf 0, #fbf8f1 32%, #f7f2e9 100%); padding: 28px; font-family: "Poppins", Arial, sans-serif; color: #2f241d; }
+.jm-container { max-width: 1280px; margin: 0 auto; }
+.jm-hero { background: linear-gradient(135deg, #24170f, #4a3324 55%, #1e1510); border: 1px solid rgba(212,175,55,.45); box-shadow: 0 18px 50px rgba(40,25,10,.18); border-radius: 26px; padding: 28px; display: flex; align-items: center; gap: 20px; color: white; margin-bottom: 22px; }
+.jm-hero-icon { width: 64px; height: 64px; border-radius: 20px; background: linear-gradient(135deg, #ffd86b, #c79623); display: flex; align-items: center; justify-content: center; color: #3c2a21; font-size: 30px; box-shadow: 0 10px 26px rgba(212,175,55,.35); }
+.jm-hero h1 { margin: 0; font-size: 30px; letter-spacing: .4px; }
+.jm-hero p { margin: 6px 0 0; color: rgba(255,255,255,.72); }
+.jm-refresh { margin-left: auto; border: 1px solid rgba(255,216,107,.5); background: rgba(255,255,255,.08); color: #ffd86b; border-radius: 999px; padding: 12px 18px; cursor: pointer; display: flex; gap: 9px; align-items: center; font-weight: 700; }
+.jm-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+.jm-tabs button { border: 1px solid #ead8a3; background: white; border-radius: 18px; padding: 16px; color: #6c4d1e; cursor: pointer; font-weight: 800; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 10px 24px rgba(0,0,0,.04); }
+.jm-tabs button.active { background: linear-gradient(135deg, #d4af37, #ffe08a); color: #27180c; border-color: #d4af37; }
+.jm-grid { display: grid; grid-template-columns: 360px 1fr; gap: 22px; align-items: start; }
+.product-grid { grid-template-columns: 380px 1fr; }
+.jm-card { background: rgba(255,255,255,.92); border: 1px solid #eee0bd; border-radius: 24px; padding: 22px; box-shadow: 0 16px 40px rgba(78,51,20,.08); overflow: auto; }
+.jm-card h2 { margin: 0 0 18px; font-size: 18px; color: #3c2a21; }
+.jm-form label { display: block; font-size: 12px; font-weight: 800; color: #785d36; text-transform: uppercase; letter-spacing: .5px; margin: 14px 0 7px; }
+.jm-form input, .jm-form select, .jm-search input { width: 100%; border: 1px solid #e5d3a8; background: #fffdf8; border-radius: 13px; padding: 13px 14px; outline: none; color: #34251a; font-size: 14px; }
+.jm-form input:focus, .jm-form select:focus, .jm-search input:focus { border-color: #d4af37; box-shadow: 0 0 0 4px rgba(212,175,55,.14); }
+.jm-form select:disabled { background: #f3f0eb; color: #9b9288; }
+.jm-actions { display: flex; gap: 10px; margin-top: 18px; }
+.jm-primary, .jm-secondary { border: none; border-radius: 14px; padding: 13px 17px; cursor: pointer; font-weight: 900; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
+.jm-primary { background: linear-gradient(135deg, #3c2a21, #1d120c); color: #ffd86b; flex: 1; }
+.jm-secondary { background: #fff2f2; color: #b33a3a; }
+.jm-list { display: grid; gap: 10px; }
+.jm-row { display: flex; justify-content: space-between; align-items: center; border: 1px solid #f1e5c7; background: #fffdf8; border-radius: 16px; padding: 13px; }
+.jm-pill { display: inline-flex; align-items: center; background: #fff7dc; color: #8a6113; border: 1px solid #efd387; border-radius: 999px; padding: 5px 11px; font-size: 12px; font-weight: 900; }
+.jm-pill.gold { background: #3c2a21; color: #ffd86b; border-color: #3c2a21; }
+.jm-icon { border: none; width: 34px; height: 34px; border-radius: 10px; margin: 0 3px; cursor: pointer; }
+.jm-icon.edit { background: #eaf5ff; color: #1976d2; }
+.jm-icon.delete { background: #fff0f0; color: #d32f2f; }
+.jm-table { width: 100%; border-collapse: collapse; min-width: 560px; }
+.jm-table th { text-align: left; color: #92744d; font-size: 12px; text-transform: uppercase; padding: 13px 10px; border-bottom: 2px solid #f0e3bf; }
+.jm-table td { padding: 13px 10px; border-bottom: 1px solid #f4ead0; font-size: 14px; }
+.jm-list-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.jm-list-head h2 { margin: 0; }
+.jm-search { min-width: 260px; flex: 1; max-width: 420px; position: relative; display: flex; align-items: center; }
+.jm-search svg { position: absolute; left: 13px; color: #b9932a; }
+.jm-search input { padding-left: 38px; }
+.no-data { text-align: center; color: #a3947b; padding: 35px !important; }
+.jm-loading { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 280px; background: white; border-radius: 22px; color: #8a6113; font-weight: 800; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.jm-alert { position: fixed; top: 24px; right: 24px; z-index: 999; display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-radius: 15px; font-weight: 900; box-shadow: 0 14px 34px rgba(0,0,0,.14); }
+.jm-alert.success { background: #e9ffe9; color: #1d7b32; border-left: 5px solid #35a853; }
+.jm-alert.error { background: #fff0f0; color: #b12828; border-left: 5px solid #e05252; }
+@media (max-width: 920px) { .jm-page { padding: 14px; } .jm-hero { flex-wrap: wrap; } .jm-refresh { margin-left: 0; } .jm-tabs { grid-template-columns: repeat(2, 1fr); } .jm-grid, .product-grid { grid-template-columns: 1fr; } .jm-list-head { flex-direction: column; align-items: stretch; } .jm-search { max-width: none; min-width: 0; } }
+@media (max-width: 520px) { .jm-tabs { grid-template-columns: 1fr; } .jm-hero h1 { font-size: 24px; } .jm-card { padding: 16px; border-radius: 18px; } }

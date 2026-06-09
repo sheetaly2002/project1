@@ -1,272 +1,427 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { 
-  FaUniversity, FaUserTie, FaPhoneAlt, FaSearch, FaCrown, 
-  FaBuilding, FaTrash, FaEdit, FaChevronLeft, FaChevronRight,
-  FaSpinner
+import {
+  FaUniversity,
+  FaUserTie,
+  FaPhoneAlt,
+  FaSearch,
+  FaCrown,
+  FaBuilding,
+  FaTrash,
+  FaEdit,
+  FaChevronLeft,
+  FaChevronRight,
+  FaSpinner,
+  FaMapMarkerAlt,
+  FaIdCard,
+  FaTimes,
+  FaCheckCircle,
+  FaExclamationCircle,
+  FaPlus,
+  FaWallet,
 } from "react-icons/fa";
-import BASE_URL from './apiConfig';
+import BASE_URL from "./apiConfig";
+import "./Suppliers.css";
+
+const API_URL = `${BASE_URL}/suppliers_api.php`;
+
+const initialForm = {
+  id: "",
+  firm_name: "",
+  contact_person: "",
+  phone: "",
+  gst_no: "",
+  opening_balance: "",
+  balance_type: "due",
+  bank_name: "",
+  account_no: "",
+  ifsc_code: "",
+  address: "",
+};
 
 export default function SupplierMaster() {
-  const API_URL = `${BASE_URL}/suppliers_api.php`;
-
-  // --- States ---
   const [suppliers, setSuppliers] = useState([]);
+  const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [btnLoading, setBtnLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [status, setStatus] = useState({ type: "", message: "" });
+
   const itemsPerPage = 6;
 
-  const initialForm = { 
-    id: "", firm_name: "", contact_person: "", phone: "", 
-    gst_no: "", bank_name: "", account_no: "", ifsc_code: "", address: "" 
+  const showStatus = (type, message) => {
+    setStatus({ type, message });
+    setTimeout(() => setStatus({ type: "", message: "" }), 3500);
   };
-  const [form, setForm] = useState(initialForm);
 
-  // --- Load Data ---
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const res = await axios.get(`${API_URL}?action=get_all`);
-      setSuppliers(res.data || []);
-    } catch (err) { console.error("API Error"); }
-    setLoading(false);
-  }, [API_URL]);
+      setSuppliers(Array.isArray(res.data) ? res.data : []);
+    } catch (error) {
+      showStatus("error", "Unable to load suppliers");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
-  // --- Save / Update ---
-  const handleSave = async (e) => {
-    e.preventDefault();
-    setBtnLoading(true);
-    try {
-      const res = await axios.post(`${API_URL}?action=save`, form);
-      if (res.data.status === "success") {
-        setForm(initialForm);
-        loadData();
-      }
-    } catch (err) { alert("Save failed"); }
-    setBtnLoading(false);
+  const resetForm = () => {
+    setForm(initialForm);
+    setDrawerOpen(false);
   };
 
-  // --- Delete ---
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to remove this supplier?")) {
-      await axios.get(`${API_URL}?action=delete&id=${id}`);
-      loadData();
+  const validateForm = () => {
+    if (!form.firm_name.trim()) return "Supplier/Firm name is required";
+    if (form.phone && !/^[0-9]{10}$/.test(form.phone)) return "Mobile number must be 10 digits";
+    if (form.gst_no && form.gst_no.length < 10) return "GSTIN looks too short";
+    if (form.opening_balance && Number(form.opening_balance) < 0) return "Opening balance cannot be negative";
+    return "";
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    const validationError = validateForm();
+    if (validationError) {
+      showStatus("error", validationError);
+      return;
+    }
+
+    setBtnLoading(true);
+    try {
+      const payload = {
+        ...form,
+        opening_balance: form.opening_balance === "" ? 0 : Number(form.opening_balance),
+      };
+      const res = await axios.post(`${API_URL}?action=save`, payload);
+      if (res.data?.status === "success") {
+        showStatus("success", res.data.message || "Supplier saved successfully");
+        resetForm();
+        loadData();
+      } else {
+        showStatus("error", res.data?.message || "Save failed");
+      }
+    } catch (error) {
+      showStatus("error", "Server error while saving supplier");
+    } finally {
+      setBtnLoading(false);
     }
   };
 
-  // --- Filter & Pagination Logic ---
-  const filtered = suppliers.filter(s => 
-    s.firm_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.contact_person.toLowerCase().includes(searchTerm.toLowerCase())
+  const handleEdit = (supplier) => {
+    setForm({
+      id: supplier.id || "",
+      firm_name: supplier.firm_name || "",
+      contact_person: supplier.contact_person || "",
+      phone: supplier.phone || "",
+      gst_no: supplier.gst_no || "",
+      opening_balance: supplier.opening_balance || "",
+      balance_type: supplier.balance_type || "due",
+      bank_name: supplier.bank_name || "",
+      account_no: supplier.account_no || "",
+      ifsc_code: supplier.ifsc_code || "",
+      address: supplier.address || "",
+    });
+    setDrawerOpen(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Remove this supplier from active list?")) return;
+
+    try {
+      const res = await axios.get(`${API_URL}?action=delete&id=${id}`);
+      if (res.data?.status === "success") {
+        showStatus("success", "Supplier removed");
+        loadData();
+      } else {
+        showStatus("error", res.data?.message || "Delete failed");
+      }
+    } catch (error) {
+      showStatus("error", "Server error while deleting supplier");
+    }
+  };
+
+  const filteredSuppliers = useMemo(() => {
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return suppliers;
+
+    return suppliers.filter((s) =>
+      [s.firm_name, s.contact_person, s.phone, s.gst_no, s.bank_name]
+        .filter(Boolean)
+        .some((value) => value.toLowerCase().includes(term))
+    );
+  }, [suppliers, searchTerm]);
+
+  const totalPages = Math.ceil(filteredSuppliers.length / itemsPerPage) || 1;
+  const currentItems = filteredSuppliers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
-  const currentItems = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const stats = useMemo(() => {
+    const totalDue = suppliers
+      .filter((s) => s.balance_type === "due")
+      .reduce((sum, s) => sum + Number(s.opening_balance || 0), 0);
+    const totalAdvance = suppliers
+      .filter((s) => s.balance_type === "advance")
+      .reduce((sum, s) => sum + Number(s.opening_balance || 0), 0);
+    return { total: suppliers.length, totalDue, totalAdvance };
+  }, [suppliers]);
 
   return (
-    <div className="royal-page">
-      <div className="royal-container">
-        
-        <header className="royal-header">
-          <FaCrown className="crown-icon" />
-          <h1>Supplier Master</h1>
-          <p>Manage Business Partners & Banking Details</p>
-          <div className="gold-line"></div>
+    <div className="supplier-page">
+      {status.message && (
+        <div className={`supplier-alert ${status.type}`}>
+          {status.type === "success" ? <FaCheckCircle /> : <FaExclamationCircle />}
+          <span>{status.message}</span>
+        </div>
+      )}
+
+      <div className="supplier-container">
+        <header className="supplier-hero">
+          <div>
+            <FaCrown className="hero-icon" />
+            <h1>Supplier Master</h1>
+            <p>Manage suppliers, GST details, opening balance and bank information.</p>
+          </div>
+          <button className="primary-action" onClick={() => setDrawerOpen(true)}>
+            <FaPlus /> New Supplier
+          </button>
         </header>
 
-        <div className="royal-grid">
-          
-          {/* LEFT: FORM SECTION */}
-          <section className="royal-card form-panel">
-            <div className="card-top">
-              <h3>{form.id ? "Edit Supplier" : "Register New Firm"}</h3>
+        <section className="stats-grid">
+          <div className="stat-card">
+            <span>Total Suppliers</span>
+            <strong>{stats.total}</strong>
+          </div>
+          <div className="stat-card danger">
+            <span>Total Due</span>
+            <strong>₹{stats.totalDue.toFixed(2)}</strong>
+          </div>
+          <div className="stat-card success">
+            <span>Total Advance</span>
+            <strong>₹{stats.totalAdvance.toFixed(2)}</strong>
+          </div>
+        </section>
+
+        <section className="supplier-card">
+          <div className="card-toolbar">
+            <div className="search-box">
+              <FaSearch />
+              <input
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                placeholder="Search firm, mobile, GSTIN or bank..."
+              />
             </div>
-            
-            <form onSubmit={handleSave} className="royal-form">
-              <div className="form-section-label"><FaBuilding /> FIRM DETAILS</div>
-              
-              <div className="field-group">
-                <label>Firm Name *</label>
-                <input type="text" value={form.firm_name} onChange={e => setForm({...form, firm_name: e.target.value})} required placeholder="e.g. Laxmi Gold Refinery" />
-              </div>
+          </div>
 
-              <div className="flex-row">
-                <div className="field-group">
-                  <label>Contact Person</label>
-                  <input type="text" value={form.contact_person} onChange={e => setForm({...form, contact_person: e.target.value})} placeholder="Owner Name" />
-                </div>
-                <div className="field-group">
-                  <label>Phone Number</label>
-                  <input type="text" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="Mobile" />
-                </div>
-              </div>
-
-              <div className="field-group">
-                <label>GST Number (Optional)</label>
-                <input type="text" value={form.gst_no} onChange={e => setForm({...form, gst_no: e.target.value})} placeholder="08AAAAA0000A1Z5" />
-              </div>
-
-              <div className="form-section-label mt-20"><FaUniversity /> BANKING INFORMATION</div>
-
-              <div className="field-group">
-                <label>Bank Name</label>
-                <input type="text" value={form.bank_name} onChange={e => setForm({...form, bank_name: e.target.value})} placeholder="e.g. ICICI Bank" />
-              </div>
-
-              <div className="flex-row">
-                <div className="field-group" style={{ flex: 2 }}>
-                  <label>Account Number</label>
-                  <input type="text" value={form.account_no} onChange={e => setForm({...form, account_no: e.target.value})} placeholder="A/c No." />
-                </div>
-                <div className="field-group" style={{ flex: 1 }}>
-                  <label>IFSC</label>
-                  <input type="text" value={form.ifsc_code} onChange={e => setForm({...form, ifsc_code: e.target.value})} placeholder="IFSC" />
-                </div>
-              </div>
-
-              <button type="submit" className="royal-submit" disabled={btnLoading}>
-                {btnLoading ? <FaSpinner className="spin" /> : (form.id ? "Update Record" : "Save Supplier")}
-              </button>
-              {form.id && <button type="button" className="cancel-btn" onClick={() => setForm(initialForm)}>Cancel Edit</button>}
-            </form>
-          </section>
-
-          {/* RIGHT: LIST SECTION */}
-          <section className="royal-card list-panel">
-            <div className="card-top">
-              <div className="search-box">
-                <FaSearch />
-                <input 
-                  placeholder="Search by Firm or Contact..." 
-                  value={searchTerm}
-                  onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}}
-                />
-              </div>
+          {loading ? (
+            <div className="empty-state">
+              <FaSpinner className="spin" />
+              <p>Loading suppliers...</p>
             </div>
-
-            <div className="table-container">
-              {loading ? (
-                <div className="loader"><FaSpinner className="spin" /> <p>Fetching Dealers...</p></div>
-              ) : (
-                <>
-                <table className="royal-table">
-                  <thead>
-                    <tr>
-                      <th>Firm Details</th>
-                      <th>Banking Info</th>
-                      <th className="text-center">Manage</th>
+          ) : currentItems.length === 0 ? (
+            <div className="empty-state">
+              <FaBuilding />
+              <p>No suppliers found.</p>
+            </div>
+          ) : (
+            <div className="table-wrap">
+              <table className="supplier-table">
+                <thead>
+                  <tr>
+                    <th>Supplier</th>
+                    <th>GST / Address</th>
+                    <th>Opening Balance</th>
+                    <th>Bank Details</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentItems.map((s) => (
+                    <tr key={s.id}>
+                      <td>
+                        <div className="supplier-name">{s.firm_name}</div>
+                        <div className="muted-line">
+                          <FaUserTie /> {s.contact_person || "N/A"}
+                        </div>
+                        <div className="muted-line">
+                          <FaPhoneAlt /> {s.phone || "No mobile"}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="gst-pill"><FaIdCard /> {s.gst_no || "No GSTIN"}</div>
+                        <div className="address-line"><FaMapMarkerAlt /> {s.address || "No address"}</div>
+                      </td>
+                      <td>
+                        <div className={`balance-pill ${s.balance_type || "due"}`}>
+                          <FaWallet /> ₹{Number(s.opening_balance || 0).toFixed(2)}
+                        </div>
+                        <small className="balance-type">{s.balance_type || "due"}</small>
+                      </td>
+                      <td>
+                        <div className="bank-name"><FaUniversity /> {s.bank_name || "No bank"}</div>
+                        <small>{s.account_no ? `A/c: ${s.account_no}` : ""}</small>
+                        <small>{s.ifsc_code ? `IFSC: ${s.ifsc_code}` : ""}</small>
+                      </td>
+                      <td>
+                        <div className="action-buttons">
+                          <button className="icon-button edit" onClick={() => handleEdit(s)} title="Edit">
+                            <FaEdit />
+                          </button>
+                          <button className="icon-button delete" onClick={() => handleDelete(s.id)} title="Delete">
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {currentItems.length > 0 ? currentItems.map(s => (
-                      <tr key={s.id}>
-                        <td>
-                          <div className="firm-name">{s.firm_name}</div>
-                          <div className="firm-sub">
-                            <FaUserTie size={10}/> {s.contact_person || 'N/A'} • <FaPhoneAlt size={10}/> {s.phone}
-                          </div>
-                          {s.gst_no && <div className="gst-badge">GST: {s.gst_no}</div>}
-                        </td>
-                        <td>
-                          <div className="bank-info">
-                            <strong>{s.bank_name || 'No Bank Info'}</strong>
-                            <span>{s.account_no && `A/c: ${s.account_no}`}</span>
-                            <small>{s.ifsc_code && `IFSC: ${s.ifsc_code}`}</small>
-                          </div>
-                        </td>
-                        <td className="text-center">
-                          <div className="action-btns">
-                            <button className="btn-edit" onClick={() => {setForm(s); window.scrollTo({top:0, behavior:'smooth'})}}><FaEdit /></button>
-                            <button className="btn-delete" onClick={() => handleDelete(s.id)}><FaTrash /></button>
-                          </div>
-                        </td>
-                      </tr>
-                    )) : (
-                      <tr><td colSpan="3" className="no-data">No suppliers found.</td></tr>
-                    )}
-                  </tbody>
-                </table>
-
-                <div className="pagination">
-                  <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><FaChevronLeft /></button>
-                  <span>Page {currentPage} of {totalPages || 1}</span>
-                  <button disabled={currentPage === totalPages || totalPages === 0} onClick={() => setCurrentPage(p => p + 1)}><FaChevronRight /></button>
-                </div>
-                </>
-              )}
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </section>
-        </div>
+          )}
+
+          <div className="pagination">
+            <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}>
+              <FaChevronLeft />
+            </button>
+            <span>Page {currentPage} of {totalPages}</span>
+            <button disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}>
+              <FaChevronRight />
+            </button>
+          </div>
+        </section>
       </div>
 
-      <style>{`
-        .royal-page { background: #fdfaf2; min-height: 100vh; padding: 40px 20px; font-family: 'Inter', sans-serif; }
-        .royal-container { max-width: 1300px; margin: 0 auto; }
-        .royal-header { text-align: center; margin-bottom: 40px; }
-        .crown-icon { font-size: 40px; color: #D4AF37; margin-bottom: 10px; }
-        .royal-header h1 { font-family: 'Playfair Display', serif; font-size: 36px; color: #2C1E16; margin: 0; }
-        .gold-line { height: 4px; width: 70px; background: #D4AF37; margin: 15px auto; border-radius: 10px; }
+      {drawerOpen && (
+        <div className="drawer-overlay">
+          <aside className="supplier-drawer">
+            <div className="drawer-header">
+              <div>
+                <h2>{form.id ? "Edit Supplier" : "Register Supplier"}</h2>
+                <p>{form.id ? "Update supplier details" : "Add a new supplier partner"}</p>
+              </div>
+              <button className="close-btn" onClick={resetForm}><FaTimes /></button>
+            </div>
 
-        .royal-grid { display: grid; grid-template-columns: 420px 1fr; gap: 30px; align-items: start; }
-        .royal-card { background: #fff; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.06); overflow: hidden; border: 1px solid #e0e0e0; }
-        
-        .card-top { background: #2C1E16; padding: 18px 25px; color: #D4AF37; }
-        .card-top h3 { margin: 0; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; }
+            <form onSubmit={handleSave} className="supplier-form">
+              <div className="section-title"><FaBuilding /> Firm Details</div>
 
-        .royal-form { padding: 30px; }
-        .form-section-label { font-size: 12px; font-weight: 800; color: #D4AF37; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
-        .mt-20 { margin-top: 25px; }
+              <label>Supplier/Firm Name *</label>
+              <input
+                required
+                value={form.firm_name}
+                onChange={(e) => setForm({ ...form, firm_name: e.target.value })}
+                placeholder="e.g. Laxmi Gold Refinery"
+              />
 
-        .field-group { margin-bottom: 18px; }
-        .field-group label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
-        .field-group input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; outline: none; transition: 0.3s; }
-        .field-group input:focus { border-color: #D4AF37; box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1); }
-        .flex-row { display: flex; gap: 15px; }
+              <div className="two-col">
+                <div>
+                  <label>Contact Person</label>
+                  <input
+                    value={form.contact_person}
+                    onChange={(e) => setForm({ ...form, contact_person: e.target.value })}
+                    placeholder="Owner / Manager"
+                  />
+                </div>
+                <div>
+                  <label>Mobile</label>
+                  <input
+                    value={form.phone}
+                    maxLength="10"
+                    onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "") })}
+                    placeholder="10-digit mobile"
+                  />
+                </div>
+              </div>
 
-        .royal-submit { width: 100%; padding: 15px; background: #D4AF37; color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.3s; }
-        .royal-submit:hover { background: #b8860b; transform: translateY(-2px); }
-        .cancel-btn { width: 100%; background: none; border: none; color: #e74c3c; cursor: pointer; margin-top: 10px; font-weight: 600; font-size: 13px; }
+              <label>GSTIN</label>
+              <input
+                value={form.gst_no}
+                onChange={(e) => setForm({ ...form, gst_no: e.target.value.toUpperCase() })}
+                placeholder="08AAAAA0000A1Z5"
+              />
 
-        .search-box { background: rgba(255,255,255,0.1); border: 1px solid #555; border-radius: 10px; display: flex; align-items: center; padding: 0 15px; }
-        .search-box input { background: transparent; border: none; color: #fff; padding: 10px; width: 100%; outline: none; }
-        .search-box input::placeholder { color: #aaa; }
+              <label>Address</label>
+              <textarea
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                placeholder="Supplier address"
+                rows="3"
+              />
 
-        .table-container { padding: 20px; min-height: 450px; }
-        .royal-table { width: 100%; border-collapse: collapse; }
-        .royal-table th { text-align: left; padding: 15px; color: #888; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid #f5f5f5; }
-        .royal-table td { padding: 20px 15px; border-bottom: 1px solid #f9f9f9; }
+              <div className="section-title"><FaWallet /> Opening Balance</div>
 
-        .firm-name { font-weight: 800; color: #2C1E16; font-size: 16px; }
-        .firm-sub { font-size: 12px; color: #777; margin: 4px 0; }
-        .gst-badge { display: inline-block; background: #f0f0f0; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; color: #555; }
+              <div className="two-col">
+                <div>
+                  <label>Opening Balance</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={form.opening_balance}
+                    onChange={(e) => setForm({ ...form, opening_balance: e.target.value })}
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label>Balance Type</label>
+                  <select
+                    value={form.balance_type}
+                    onChange={(e) => setForm({ ...form, balance_type: e.target.value })}
+                  >
+                    <option value="due">Due</option>
+                    <option value="advance">Advance</option>
+                  </select>
+                </div>
+              </div>
 
-        .bank-info { display: flex; flex-direction: column; gap: 2px; }
-        .bank-info strong { font-size: 13px; color: #D4AF37; }
-        .bank-info span { font-size: 12px; color: #555; }
-        .bank-info small { font-size: 11px; color: #aaa; }
+              <div className="section-title"><FaUniversity /> Bank Information</div>
 
-        .action-btns { display: flex; gap: 10px; justify-content: center; }
-        .action-btns button { border: none; padding: 10px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-        .btn-edit { background: #e3f2fd; color: #1976d2; }
-        .btn-delete { background: #ffebee; color: #d32f2f; }
-        .action-btns button:hover { transform: scale(1.1); }
+              <label>Bank Name</label>
+              <input
+                value={form.bank_name}
+                onChange={(e) => setForm({ ...form, bank_name: e.target.value })}
+                placeholder="e.g. ICICI Bank"
+              />
 
-        .pagination { display: flex; justify-content: center; align-items: center; gap: 20px; padding: 30px 0; }
-        .pagination button { background: #fff; border: 1px solid #D4AF37; color: #D4AF37; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
-        .pagination button:disabled { opacity: 0.3; cursor: not-allowed; }
-        .pagination button:hover:not(:disabled) { background: #D4AF37; color: #fff; }
-        .pagination span { font-weight: 700; font-size: 13px; color: #2C1E16; }
+              <div className="two-col">
+                <div>
+                  <label>Account Number</label>
+                  <input
+                    value={form.account_no}
+                    onChange={(e) => setForm({ ...form, account_no: e.target.value })}
+                    placeholder="A/c number"
+                  />
+                </div>
+                <div>
+                  <label>IFSC</label>
+                  <input
+                    value={form.ifsc_code}
+                    onChange={(e) => setForm({ ...form, ifsc_code: e.target.value.toUpperCase() })}
+                    placeholder="IFSC"
+                  />
+                </div>
+              </div>
 
-        .loader { text-align: center; padding: 50px; color: #D4AF37; }
-        .spin { animation: rotate 1s linear infinite; font-size: 30px; }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        
-        @media (max-width: 1000px) { .royal-grid { grid-template-columns: 1fr; } }
-      `}</style>
+              <button className="save-button" type="submit" disabled={btnLoading}>
+                {btnLoading ? <FaSpinner className="spin small" /> : form.id ? "Update Supplier" : "Save Supplier"}
+              </button>
+              {form.id && <button type="button" className="link-button" onClick={() => setForm(initialForm)}>Cancel Edit</button>}
+            </form>
+          </aside>
+        </div>
+      )}
     </div>
   );
 }

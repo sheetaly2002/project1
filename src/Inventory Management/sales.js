@@ -1,1029 +1,523 @@
-
-
-
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
-import BASE_URLS from "./apiConfig";
-import { Trash2, Save, Barcode, RefreshCw, Printer } from "lucide-react";
+import {
+  FaBarcode, FaCheckCircle, FaChevronLeft, FaChevronRight, FaCrown,
+  FaExclamationCircle, FaFileInvoice, FaPrint, FaReceipt, FaRecycle,
+  FaRupeeSign, FaSave, FaSearch, FaSpinner, FaTimes, FaTrash, FaUser
+} from "react-icons/fa";
+import BASE_URL from "./apiConfig";
 import "./salesManager.css";
 
-const SalesManager = () => {
-  const [activeTab, setActiveTab] = useState("billing");
+
+const API = `${BASE_URL}/sales_billing_api.php`;
+const today = new Date().toISOString().slice(0, 10);
+
+const emptyBill = {
+  customer_id: "",
+  walkin_name: "Walk-in Customer",
+  walkin_mobile: "",
+  sale_date: today,
+  tax_percent: "3",
+  discount_amount: "0",
+  paid_amount: "0",
+  payment_mode: "Cash",
+};
+
+export default function SalesBilling() {
   const [customers, setCustomers] = useState([]);
-  const [cart, setCart] = useState([]);
+  const [availableStock, setAvailableStock] = useState([]);
+  const [items, setItems] = useState([]);
+  const [bill, setBill] = useState(emptyBill);
   const [barcode, setBarcode] = useState("");
-  const [selectedCust, setSelectedCust] = useState("");
-  const [goldRate, setGoldRate] = useState("");
-  const [salesHistory, setSalesHistory] = useState([]);
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [stockSearch, setStockSearch] = useState("");
+  const [recentSales, setRecentSales] = useState([]);
+  const [recentPage, setRecentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState({ type: "", message: "" });
+  const [lastSale, setLastSale] = useState(null);
   const [paperSize, setPaperSize] = useState("A4");
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [selectedSaleForPrint, setSelectedSaleForPrint] = useState(null);
-  
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [printLoading, setPrintLoading] = useState(false);
+  const scanRef = useRef(null);
+  const perPage = 8;
 
-// Open print modal with selected sale
-const openPrintDialog = (sale) => {
-    setSelectedSaleForPrint(sale);
-    setShowPrintModal(true);
-};
+  const toast = (type, message) => {
+    setStatus({ type, message });
+    setTimeout(() => setStatus({ type: "", message: "" }), 3500);
+  };
 
-  useEffect(() => {
-    fetchCustomers();
-    fetchSalesHistory();
-  }, []);
+  const money = (v) => Number(v || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  // Reset to page 1 when sales history updates
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [salesHistory]);
-
-  const fetchCustomers = async () => {
+  const loadInit = async () => {
+    setLoading(true);
     try {
-      const res = await axios.get(`${BASE_URLS}/customers.php`);
-      const data = Array.isArray(res.data)
-        ? res.data
-        : res.data.customers || [];
-      setCustomers(data);
-    } catch (err) {
-      setCustomers([]);
-      console.error(err);
+      const [init, recent] = await Promise.all([
+        axios.get(`${API}?action=init`),
+        axios.get(`${API}?action=recent`),
+      ]);
+      setCustomers(init.data.customers || []);
+      setAvailableStock(init.data.available_stock || []);
+      setRecentSales(recent.data.sales || []);
+    } catch (e) {
+      toast("error", "Sales data load failed");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchSalesHistory = async () => {
-    try {
-      const res = await axios.get(`${BASE_URLS}/sales_api.php`);
-      const finalData = Array.isArray(res.data)
-        ? res.data
-        : res.data.data || res.data.sales || [];
-      const cleanData = finalData.filter(
-        (item) => item !== null && typeof item === "object"
-      );
-      setSalesHistory(cleanData);
-    } catch (err) {
-      setSalesHistory([]);
-      console.error(err);
+  useEffect(() => { loadInit(); }, []);
+  useEffect(() => { setTimeout(() => scanRef.current?.focus(), 200); }, []);
+
+  const selectedCustomer = useMemo(
+    () => customers.find((c) => String(c.customer_id) === String(bill.customer_id)),
+    [customers, bill.customer_id]
+  );
+
+  const customerOptions = useMemo(() => {
+    const q = customerSearch.toLowerCase();
+    return customers.filter(c =>
+      (c.customer_name || "").toLowerCase().includes(q) ||
+      (c.mobile || "").includes(q)
+    ).slice(0, 20);
+  }, [customers, customerSearch]);
+
+  const stockOptions = useMemo(() => {
+    const q = stockSearch.toLowerCase().trim();
+    if (!q) return availableStock.slice(0, 8);
+    return availableStock.filter(s =>
+      (s.barcode_no || "").toLowerCase().includes(q) ||
+      (s.product_name || "").toLowerCase().includes(q) ||
+      (s.metal_name || "").toLowerCase().includes(q) ||
+      (s.item_type || "").toLowerCase().includes(q)
+    ).slice(0, 12);
+  }, [availableStock, stockSearch]);
+
+  const calcItem = (item) => {
+    const net = Number(item.net_weight || item.remaining_weight || 0);
+    const rate = Number(item.rate_per_gram || 0);
+    const makingValue = Number(item.making_value ?? item.making_charge ?? 0);
+    const metalAmount = net * rate;
+    const makingTotal = item.making_charge_type === "percent" ? metalAmount * makingValue / 100 : makingValue;
+    return {
+      ...item,
+      net_weight: net,
+      stock_rate_per_gram: item.stock_rate_per_gram ?? item.rate_per_gram,
+      rate_source: item.rate_source || "stock",
+      making_value: makingValue,
+      making_total: makingTotal,
+      item_subtotal: metalAmount + makingTotal
+    };
+  };
+
+  const addStockItem = (stock) => {
+    if (!stock?.stock_id) return;
+    if (items.some((i) => String(i.stock_id) === String(stock.stock_id))) {
+      toast("error", "This barcode already added in bill");
+      return;
     }
-  };
-
-  // --- Barcode Logic ---
-  const handleBarcodeSearch = async (e) => {
-    const val = e.target.value.toUpperCase().trim();
-    setBarcode(val);
-    if (val.length >= 6) {
-      try {
-        const res = await axios.get(
-          `${BASE_URLS}/stock_api.php?action=search&barcode=${val}`
-        );
-        if (res.data && res.data.length > 0) {
-          const item = res.data[0];
-          if (cart.find((c) => c.id === item.id)) return setBarcode("");
-          const newItem = {
-            ...item,
-            sale_rate: goldRate || item.rate || 0,
-            m_type: "fixed",
-            m_value: 0,
-            sub_total: 0,
-          };
-          calculateItem(newItem, [...cart, newItem]);
-          setBarcode("");
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-  };
-
-  // --- Calculate Row ---
-  const calculateItem = (item, currentCart) => {
-    const weight = parseFloat(item.net_weight) || 0;
-    const rate = parseFloat(item.sale_rate) || 0;
-    const mVal = parseFloat(item.m_value) || 0;
-    let makingAmt = 0;
-    if (item.m_type === "per_gram") makingAmt = weight * mVal;
-    else if (item.m_type === "fixed") makingAmt = mVal;
-    else if (item.m_type === "percent") makingAmt = (weight * rate * mVal) / 100;
-    item.sub_total = (weight * rate) + makingAmt;
-    item.making_total = makingAmt;
-    const updatedCart = currentCart.map((c) => (c.id === item.id ? item : c));
-    setCart(updatedCart);
-  };
-
-  const updateRow = (id, field, value) => {
-    const updatedCart = cart.map((item) => {
-      if (item.id === id) {
-        const newItem = { ...item, [field]: value };
-        calculateItem(newItem, cart);
-        return newItem;
-      }
-      return item;
+    const newItem = calcItem({
+      ...stock,
+      stock_rate_per_gram: stock.rate_per_gram,
+      rate_source: "stock",
+      making_charge_type: "amount",
+      making_value: stock.making_charge || 0,
     });
-    setCart(updatedCart);
+    setItems((prev) => [...prev, newItem]);
+    setBarcode("");
+    setStockSearch("");
+    setTimeout(() => scanRef.current?.focus(), 100);
   };
 
+  const scanBarcode = async (e) => {
+    e?.preventDefault?.();
+    const code = barcode.trim();
+    if (!code) return toast("error", "Barcode scan / enter karo");
+    try {
+      const res = await axios.get(`${API}?action=barcode&barcode=${encodeURIComponent(code)}`);
+      if (res.data.status === "success") addStockItem(res.data.item);
+      else toast("error", res.data.message || "Barcode not found");
+    } catch (err) {
+      toast("error", "Barcode search failed");
+    }
+  };
 
+  const updateItem = (stockId, key, value) => {
+    setItems((prev) => prev.map((i) => String(i.stock_id) === String(stockId) ? calcItem({ ...i, [key]: value }) : i));
+  };
 
-  // --- Totals ---
-  const totalWeight = cart.reduce((s, i) => s + parseFloat(i.net_weight || 0), 0);
-  const subTotalAll = cart.reduce((s, i) => s + (i.sub_total || 0), 0);
-  const taxAmount = (subTotalAll * 3) / 100;
-  const finalAmount = subTotalAll + taxAmount;
+  const applyStockRate = (stockId) => {
+    setItems((prev) => prev.map((i) => {
+      if (String(i.stock_id) !== String(stockId)) return i;
+      return calcItem({ ...i, rate_per_gram: i.stock_rate_per_gram || i.rate_per_gram, rate_source: "stock" });
+    }));
+  };
 
-  // --- Save Bill ---
- const handleSaveBill = async () => {
-    if (!selectedCust || cart.length === 0)
-        return alert("Customer select karo aur item add karo!");
+  const applyTodayRate = async (stockId) => {
+    try {
+      const res = await axios.get(`${API}?action=latest_rate&stock_id=${stockId}`);
+      if (res.data.status !== "success") return toast("error", res.data.message || "Today rate not found");
+      const rate = res.data.rate;
+      setItems((prev) => prev.map((i) => {
+        if (String(i.stock_id) !== String(stockId)) return i;
+        return calcItem({
+          ...i,
+          rate_per_gram: rate.rate_per_gram,
+          rate_source: "today",
+          today_rate_date: rate.rate_date,
+        });
+      }));
+      toast("success", `Today rate applied ₹${money(rate.rate_per_gram)}`);
+    } catch (e) {
+      toast("error", e.response?.data?.message || "Today rate not found");
+    }
+  };
 
-    const payload = {
-        customer_id: selectedCust,
-        total_weight: totalWeight,
-        sub_total: subTotalAll,
-        tax_amount: taxAmount,
-        final_amount: finalAmount,
-        items: cart,
+  const removeItem = (stockId) => setItems(prev => prev.filter(i => String(i.stock_id) !== String(stockId)));
+
+  const totals = useMemo(() => {
+    const subtotal = items.reduce((s, i) => s + Number(i.item_subtotal || 0), 0);
+    const discount = Number(bill.discount_amount || 0);
+    const taxable = Math.max(subtotal - discount, 0);
+    const tax = taxable * Number(bill.tax_percent || 0) / 100;
+    const grand = taxable + tax;
+    const paid = Number(bill.paid_amount || 0);
+    return { subtotal, discount, taxable, tax, grand, paid, due: Math.max(grand - paid, 0) };
+  }, [items, bill.discount_amount, bill.tax_percent, bill.paid_amount]);
+
+  const saveSale = async () => {
+    if (!items.length) return toast("error", "At least one barcode item add karo");
+    if (!bill.customer_id && !bill.walkin_name.trim()) return toast("error", "Customer ya walk-in name required");
+    if (Number(bill.paid_amount) < 0) return toast("error", "Paid amount invalid");
+
+    setSaving(true);
+    try {
+      const payload = {
+        ...bill,
+        items: items.map(i => ({
+          stock_id: i.stock_id,
+          rate_per_gram: i.rate_per_gram,
+          making_charge_type: i.making_charge_type,
+          making_value: i.making_value,
+          rate_source: i.rate_source || "stock",
+        })),
+      };
+      const res = await axios.post(API, payload);
+      if (res.data.status === "success") {
+        toast("success", `Bill saved: ${res.data.bill_no}`);
+        setLastSale({ sale_id: res.data.sale_id, bill_no: res.data.bill_no });
+        setItems([]);
+        setBill(emptyBill);
+        await loadInit();
+      } else toast("error", res.data.message || "Sale save failed");
+    } catch (e) {
+      toast("error", e.response?.data?.message || "Sale save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const numberToWords = (num) => {
+    const n = Math.round(Number(num || 0));
+    if (n === 0) return "Zero Rupees";
+
+    const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+    const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+    const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+    const twoDigit = (x) => {
+      if (x < 10) return ones[x];
+      if (x < 20) return teens[x - 10];
+      return `${tens[Math.floor(x / 10)]}${x % 10 ? " " + ones[x % 10] : ""}`;
     };
 
+    const threeDigit = (x) => {
+      const h = Math.floor(x / 100);
+      const r = x % 100;
+      return `${h ? ones[h] + " Hundred" : ""}${h && r ? " and " : ""}${r ? twoDigit(r) : ""}`.trim();
+    };
+
+    let value = n;
+    const parts = [];
+    const crore = Math.floor(value / 10000000); value %= 10000000;
+    const lakh = Math.floor(value / 100000); value %= 100000;
+    const thousand = Math.floor(value / 1000); value %= 1000;
+
+    if (crore) parts.push(`${threeDigit(crore)} Crore`);
+    if (lakh) parts.push(`${threeDigit(lakh)} Lakh`);
+    if (thousand) parts.push(`${threeDigit(thousand)} Thousand`);
+    if (value) parts.push(threeDigit(value));
+
+    return `${parts.join(" ")} Rupees`;
+  };
+
+  const openPrintDialog = async (saleId) => {
+    setPrintLoading(true);
     try {
-        const res = await axios.post(
-            `${BASE_URLS}/sales_api.php?action=create`,
-            payload
-        );
-
-        // Console mein check karein ki backend kya bhej raha hai
-        console.log("Backend Response:", res.data);
-
-        // Agar status 'success' string hai
-        if (res.data.status === "success" || res.data.success === true) {
-            alert("✅ Bill Saved! Invoice: " + (res.data.invoice_no || "N/A"));
-            setCart([]);
-            setSelectedCust("");
-            fetchSalesHistory();
-            setActiveTab("history");
-        } else {
-            // Agar backend error message bhej raha hai toh wahi dikhayein
-            alert("Backend Error: " + (res.data.message || "Status success nahi mila"));
-        }
-    } catch (err) {
-        console.error("Critical Error:", err);
-        alert("API Error: Server respond nahi kar raha.");
-    }
-};
-  // --- Delete Sale ---
-  const handleDelete = async (id) => {
-    if (window.confirm("Delete record?")) {
-      await axios.get(`${BASE_URLS}/sales_api.php?action=delete&id=${id}`);
-      fetchSalesHistory();
+      const res = await axios.get(`${API}?action=bill&id=${saleId}`);
+      if (res.data.status !== "success") return toast("error", "Invoice not found");
+      setSelectedSaleForPrint({ sale: res.data.sale, items: res.data.items || [] });
+      setShowPrintModal(true);
+    } catch {
+      toast("error", "Invoice load failed");
+    } finally {
+      setPrintLoading(false);
     }
   };
 
-  // --- Pagination Logic ---
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = salesHistory.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(salesHistory.length / itemsPerPage);
+  const printInvoice = () => {
+    if (!selectedSaleForPrint) return toast("error", "Invoice not selected");
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-  const goToNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+    const { sale, items: billItems } = selectedSaleForPrint;
+    const subTotal = Number(sale.subtotal || sale.total_amount || 0);
+    const discount = Number(sale.discount_amount || 0);
+    const taxPercent = Number(sale.tax_percent || 0);
+    const taxAmount = Number(sale.tax_amount || ((Math.max(subTotal - discount, 0) * taxPercent) / 100));
+    const halfGst = taxAmount / 2;
+    const finalAmount = Number(sale.grand_total || sale.total_amount || (subTotal - discount + taxAmount));
+    const paidAmount = Number(sale.paid_amount || 0);
+    const dueAmount = Number(sale.due_amount || Math.max(finalAmount - paidAmount, 0));
+
+    const customerName = sale.customer_name || sale.walkin_name || "Walk-in Customer";
+    const customerMobile = sale.mobile || sale.walkin_mobile || "-";
+    const invoiceNo = sale.bill_no || sale.invoice_no || `SALE-${sale.sale_id}`;
+    const invoiceDate = sale.sale_date || sale.created_at || today;
+    const printWindow = window.open("", "_blank");
+
+    const rows = billItems.map((item, i) => {
+      const weight = Number(item.net_weight || item.remaining_weight || 0);
+      const rate = Number(item.rate_per_gram || item.sale_rate || 0);
+      const making = Number(item.making_total || item.making_charge || 0);
+      const total = Number(item.total_amount || ((weight * rate) + making));
+      const purity = item.purity_name || item.product_purity || item.purity || "-";
+      return `
+        <tr>
+          <td class="center"><b>${i + 1}</b></td>
+          <td class="desc">
+            <b>${item.product_name || "Jewellery Item"}</b><br/>
+            <small>${item.barcode_no || "-"} • ${item.metal_name || ""} ${item.item_type || ""} • Purity: ${purity}</small>
+          </td>
+          <td class="center">${weight.toFixed(3)}</td>
+          <td class="right">₹${money(rate)}</td>
+          <td class="right">₹${money(making)}</td>
+          <td class="right"><b>₹${money(total)}</b></td>
+        </tr>`;
+    }).join("");
+
+    const minRows = paperSize === "A5" ? 3 : 8;
+    const fillerRows = Array(Math.max(minRows - billItems.length, 0)).fill("").map(() => `
+      <tr class="blank-row"><td colspan="6">&nbsp;</td></tr>
+    `).join("");
+
+    const html = `
+      <!doctype html>
+      <html>
+      <head>
+        <title>Invoice - ${invoiceNo}</title>
+        <style>
+          @page { size: ${paperSize}; margin: ${paperSize === "A5" ? "8mm" : "10mm"}; }
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body { font-family: 'Times New Roman', serif; background: #fff; color: #000; }
+          .print-container { width: 100%; min-height: ${paperSize === "A5" ? "194mm" : "277mm"}; display: flex; justify-content: center; }
+          .invoice { width: 100%; max-width: ${paperSize === "A5" ? "132mm" : "190mm"}; padding: ${paperSize === "A5" ? "5mm" : "8mm"}; }
+          .header { text-align: center; padding-bottom: ${paperSize === "A5" ? "7px" : "12px"}; border-bottom: 3px double #000; margin-bottom: ${paperSize === "A5" ? "10px" : "15px"}; }
+          .header h1 { font-size: ${paperSize === "A5" ? "18px" : "25px"}; letter-spacing: 2px; text-transform: uppercase; }
+          .header p { font-size: ${paperSize === "A5" ? "10px" : "12px"}; margin-top: 3px; }
+          .info { width: 100%; border-collapse: collapse; border: 2px solid #000; margin-bottom: ${paperSize === "A5" ? "10px" : "14px"}; }
+          .info td { border: 1px solid #000; padding: ${paperSize === "A5" ? "6px" : "10px"}; font-size: ${paperSize === "A5" ? "10px" : "12px"}; vertical-align: top; }
+          .items { width: 100%; border-collapse: collapse; border: 2px solid #000; }
+          .items th { background: #f2f2f2; border: 1px solid #000; padding: ${paperSize === "A5" ? "5px" : "8px"}; font-size: ${paperSize === "A5" ? "9px" : "11px"}; text-transform: uppercase; }
+          .items td { border: 1px solid #000; padding: ${paperSize === "A5" ? "5px" : "8px"}; font-size: ${paperSize === "A5" ? "10px" : "12px"}; }
+          .items small { color: #444; font-size: ${paperSize === "A5" ? "8px" : "10px"}; }
+          .center { text-align: center; } .right { text-align: right; } .desc { text-align: left; }
+          .blank-row td { height: ${paperSize === "A5" ? "18px" : "25px"}; }
+          .bottom { display: flex; justify-content: flex-end; border: 2px solid #000; border-top: 0; margin-bottom: ${paperSize === "A5" ? "16px" : "25px"}; }
+          .totals { width: ${paperSize === "A5" ? "58%" : "45%"}; border-collapse: collapse; }
+          .totals td { padding: ${paperSize === "A5" ? "4px 8px" : "6px 12px"}; border-bottom: 1px solid #ddd; font-size: ${paperSize === "A5" ? "10px" : "12px"}; }
+          .grand td { background: #e9e9e9; border-top: 2px solid #000; font-weight: 900; font-size: ${paperSize === "A5" ? "12px" : "14px"}; }
+          .words { font-style: italic; font-size: ${paperSize === "A5" ? "9px" : "10px"}; }
+          .signature { display: flex; justify-content: space-between; margin-top: ${paperSize === "A5" ? "28px" : "45px"}; }
+          .sig-box { width: ${paperSize === "A5" ? "130px" : "180px"}; text-align: center; font-size: ${paperSize === "A5" ? "9px" : "11px"}; }
+          .sig-line { border-top: 1.5px solid #000; padding-top: 5px; font-weight: bold; text-transform: uppercase; }
+          .terms { margin-top: ${paperSize === "A5" ? "14px" : "22px"}; border-top: 1px dashed #999; padding-top: 8px; font-size: ${paperSize === "A5" ? "8px" : "9px"}; color: #444; line-height: 1.4; }
+          @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+        </style>
+      </head>
+      <body>
+        <div class="print-container">
+          <div class="invoice">
+            <div class="header">
+              <h1>Tax Invoice</h1>
+              <p>Original for Recipient</p>
+            </div>
+
+            <table class="info">
+              <tr>
+                <td width="60%">
+                  <b style="font-size:${paperSize === "A5" ? "12px" : "14px"};">BILL TO:</b><br/>
+                  <b>${customerName}</b><br/>
+                  Mobile: ${customerMobile}<br/>
+                  ${sale.address ? `Address: ${sale.address}<br/>` : ""}
+                  Place: Ujjain (M.P.)
+                </td>
+                <td class="right">
+                  <b>INVOICE DETAILS</b><br/><br/>
+                  <b>Invoice No:</b> ${invoiceNo}<br/>
+                  <b>Date:</b> ${new Date(invoiceDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}<br/>
+                  <b>Payment:</b> ${sale.payment_mode || "-"}
+                </td>
+              </tr>
+            </table>
+
+            <table class="items">
+              <thead>
+                <tr>
+                  <th width="5%">#</th>
+                  <th width="37%">Description</th>
+                  <th width="13%">Weight (g)</th>
+                  <th width="15%">Rate</th>
+                  <th width="15%">Making</th>
+                  <th width="15%">Amount</th>
+                </tr>
+              </thead>
+              <tbody>${rows}${fillerRows}</tbody>
+            </table>
+
+            <div class="bottom">
+              <table class="totals">
+                <tr><td><b>Sub Total:</b></td><td class="right"><b>₹${money(subTotal)}</b></td></tr>
+                <tr><td>Discount:</td><td class="right">₹${money(discount)}</td></tr>
+                <tr><td>CGST (${taxPercent / 2}%):</td><td class="right">₹${money(halfGst)}</td></tr>
+                <tr><td>SGST (${taxPercent / 2}%):</td><td class="right">₹${money(halfGst)}</td></tr>
+                <tr><td><b>GST Total (${taxPercent}%):</b></td><td class="right"><b>₹${money(taxAmount)}</b></td></tr>
+                <tr class="grand"><td>TOTAL AMOUNT:</td><td class="right">₹${money(finalAmount)}</td></tr>
+                <tr><td>Paid:</td><td class="right">₹${money(paidAmount)}</td></tr>
+                <tr><td>Due:</td><td class="right">₹${money(dueAmount)}</td></tr>
+                <tr><td colspan="2" class="words">Amount in Words: ${numberToWords(finalAmount)} Only</td></tr>
+              </table>
+            </div>
+
+            <div class="signature">
+              <div class="sig-box"><div class="sig-line">Customer's Signature</div></div>
+              <div class="sig-box"><b>For Shree Ji Jewellers</b><div class="sig-line">Authorized Signatory</div></div>
+            </div>
+
+            <div class="terms">
+              <b>Terms:</b> Goods once sold will not be returned without bill. Weight, rate and making charges checked and accepted by customer.
+            </div>
+          </div>
+        </div>
+        <script>window.onload=()=>setTimeout(()=>{window.print();window.close()},600)</script>
+      </body>
+      </html>`;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+    setShowPrintModal(false);
   };
-  const goToPrevPage = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  };
 
-
-
-  // --- Helper Function: Number to Words ---
-  const numberToWords = (num) => {
-      const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
-      const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-      const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
-      
-      if (num === 0) return 'Zero';
-      
-      let words = '';
-      const crore = Math.floor(num / 10000000);
-      const lakh = Math.floor((num % 10000000) / 100000);
-      const thousand = Math.floor((num % 100000) / 1000);
-      const hundred = Math.floor((num % 1000) / 100);
-      const remainder = Math.floor(num % 100);
-      
-      if (crore > 0) words += ones[crore] + ' Crore ';
-      if (lakh > 0) words += ones[lakh] + ' Lakh ';
-      if (thousand > 0) words += ones[thousand] + ' Thousand ';
-      if (hundred > 0) words += ones[hundred] + ' Hundred ';
-      
-      if (remainder > 0) {
-          if (words !== '') words += 'and ';
-          if (remainder < 10) words += ones[remainder];
-          else if (remainder < 20) words += teens[remainder - 10];
-          else {
-              words += tens[Math.floor(remainder / 10)];
-              if (remainder % 10 > 0) words += ' ' + ones[remainder % 10];
-          }
-      }
-      
-      return words.trim() + ' Rupees';
-  };
-
-const handleConfirmPrint = async () => {
-    if (!selectedSaleForPrint) return alert("Sale data missing!");
-
-    try {
-        const res = await fetch(`${BASE_URLS}/sales_api.php?action=get_items&sale_id=${selectedSaleForPrint.id}`);
-        const resData = await res.json();
-        const items = Array.isArray(resData.items) ? resData.items : [];
-        
-        // Debug: Log the items data to see what fields are available
-        console.log("Print Items Data:", items);
-        
-        // Final Calculations
-        const subTotal = parseFloat(selectedSaleForPrint.sub_total || 0);
-        const taxAmount = parseFloat(selectedSaleForPrint.tax_amount || 0);
-        
-        // GST ko aadha-aadha divide kiya
-        const halfGst = (taxAmount / 2).toFixed(2);
-        const finalAmount = parseFloat(selectedSaleForPrint.final_amount || 0);
-
-        const printWindow = window.open('', '_blank');
-        const html = `
-          <html>
-          <head>
-              <title>Invoice - ${selectedSaleForPrint.invoice_no}</title>
-              <style>
-                  @page { 
-                      size: ${paperSize === 'A5' ? 'A5' : 'A4'}; 
-                      margin: 10mm; 
-                  }
-                  * { 
-                      box-sizing: border-box; 
-                      margin: 0; 
-                      padding: 0; 
-                  }
-                  body { 
-                      font-family: 'Times New Roman', Times, serif; 
-                      background: #fff; 
-                      color: #000; 
-                      line-height: 1.4;
-                  }
-                  
-                  .print-container {
-                      width: 100%;
-                      max-width: ${paperSize === 'A5' ? '148mm' : '210mm'};
-                      min-height: ${paperSize === 'A5' ? '210mm' : '297mm'};
-                      margin: 0 auto;
-                      padding: 0;
-                      position: relative;
-                      background: #fff;
-                      display: flex;
-                      justify-content: center;
-                      align-items: center;
-                  }
-
-                  .content-wrapper { 
-                      width: 90%; 
-                      display: flex; 
-                      flex-direction: column;
-                      position: relative;
-                      z-index: 1;
-                      padding: ${paperSize === 'A5' ? '6mm 8mm' : '10mm 12mm'};
-                      margin-top: ${paperSize === 'A5' ? '5mm' : '8mm'};
-                  }
-
-                  /* Professional Invoice Header */
-                  .invoice-header {
-                      text-align: center;
-                      margin-bottom: ${paperSize === 'A5' ? '12px' : '18px'};
-                      padding-bottom: ${paperSize === 'A5' ? '8px' : '12px'};
-                      border-bottom: 3px double #000;
-                  }
-                  .invoice-header h1 { 
-                      font-size: ${paperSize === 'A5' ? '18px' : '24px'};
-                      font-weight: bold;
-                      text-transform: uppercase;
-                      letter-spacing: 2px;
-                      margin-bottom: 4px;
-                      color: #000;
-                  }
-                  .invoice-header p {
-                      font-size: ${paperSize === 'A5' ? '10px' : '12px'};
-                      color: #333;
-                  }
-
-                  /* Info Section with Border */
-                  .info-section { 
-                      width: 100%; 
-                      border: 2px solid #000;
-                      margin-bottom: ${paperSize === 'A5' ? '10px' : '15px'};
-                      border-collapse: collapse;
-                  }
-                  .info-section td { 
-                      border: 1px solid #000; 
-                      padding: ${paperSize === 'A5' ? '6px 8px' : '10px 12px'};
-                      font-size: ${paperSize === 'A5' ? '10px' : '12px'};
-                      vertical-align: top;
-                  }
-                  .info-section strong {
-                      font-size: ${paperSize === 'A5' ? '11px' : '13px'};
-                  }
-
-                  /* Professional Item Table */
-                  .item-table { 
-                      width: 100%; 
-                      border-collapse: collapse; 
-                      border: 2px solid #000;
-                      margin-bottom: ${paperSize === 'A5' ? '10px' : '15px'};
-                  }
-                  .item-table th { 
-                      border: 1px solid #000; 
-                      background: #f5f5f5;
-                      padding: ${paperSize === 'A5' ? '5px 6px' : '8px 10px'};
-                      font-size: ${paperSize === 'A5' ? '9px' : '11px'};
-                      text-transform: uppercase;
-                      font-weight: bold;
-                      text-align: center;
-                      letter-spacing: 0.5px;
-                  }
-                  .item-table td { 
-                      border: 1px solid #000; 
-                      padding: ${paperSize === 'A5' ? '6px 8px' : '8px 10px'};
-                      font-size: ${paperSize === 'A5' ? '10px' : '12px'};
-                      text-align: center;
-                  }
-                  .item-table tbody tr:nth-child(even) {
-                  
-                      background-color: #fafafa;
-                  }
-                  .item-desc {
-                      text-align: left !important;
-                      font-weight: 500;
-                  }
-                  .item-desc small {
-                      color: #555;
-                      font-style: italic;
-                  }
-
-                  /* Calculation Section */
-                  .calculation-section { 
-                      display: flex; 
-                      width: 100%; 
-                      border: 2px solid #000;
-                      border-top: none;
-                      justify-content: flex-end;
-                      margin-bottom: ${paperSize === 'A5' ? '15px' : '25px'};
-                  }
-                  .totals-side { 
-                      width: ${paperSize === 'A5' ? '50%' : '45%'};
-                  }
-                  .totals-side table { 
-                      width: 100%; 
-                      border-collapse: collapse; 
-                  }
-                  .totals-side td { 
-                      padding: ${paperSize === 'A5' ? '4px 10px' : '6px 15px'};
-                      border-bottom: 1px solid #ddd;
-                      font-size: ${paperSize === 'A5' ? '10px' : '12px'};
-                  }
-                  .totals-side tr:last-child td {
-                      border-bottom: none;
-                  }
-                  .grand-total-row { 
-                      background: #e8e8e8; 
-                      font-weight: bold; 
-                      font-size: ${paperSize === 'A5' ? '12px' : '14px'} !important;
-                      border-top: 2px solid #000;
-                  }
-
-                  /* Signature Area */
-                  .sig-area { 
-                      margin-top: ${paperSize === 'A5' ? '30px' : '50px'};
-                      margin-bottom: ${paperSize === 'A5' ? '20px' : '40px'};
-                      display: flex; 
-                      justify-content: space-between;
-                      align-items: flex-end;
-                  }
-                  .sig-box { 
-                      text-align: center; 
-                      width: ${paperSize === 'A5' ? '140px' : '180px'};
-                      font-size: ${paperSize === 'A5' ? '9px' : '11px'};
-                  }
-                  .sig-line { 
-                      margin-top: ${paperSize === 'A5' ? '30px' : '40px'};
-                      border-top: 1.5px solid #000;
-                      padding-top: 5px;
-                      font-weight: bold;
-                      text-transform: uppercase;
-                      letter-spacing: 0.5px;
-                  }
-
-                  /* Terms & Conditions */
-                  .terms-section {
-                      margin-top: ${paperSize === 'A5' ? '15px' : '20px'};
-                      padding-top: ${paperSize === 'A5' ? '8px' : '12px'};
-                      border-top: 1px dashed #999;
-                      font-size: ${paperSize === 'A5' ? '8px' : '9px'};
-                      color: #555;
-                      line-height: 1.5;
-                  }
-                  .terms-section h4 {
-                      font-size: ${paperSize === 'A5' ? '9px' : '10px'};
-                      margin-bottom: 4px;
-                      color: #000;
-                      text-transform: uppercase;
-                  }
-                  .terms-section ul {
-                      margin-left: 15px;
-                      list-style-type: disc;
-                  }
-
-                  @media print {
-                      body { 
-                          background: white; 
-                          -webkit-print-color-adjust: exact;
-                          print-color-adjust: exact;
-                      }
-                      .print-container { 
-                          box-shadow: none;
-                          page-break-inside: avoid;
-                          background: white !important;
-                      }
-                  }
-              </style>
-          </head>
-          <body>
-              <div class="print-container">
-                  <div class="content-wrapper">
-                      
-                      <div class="invoice-header">
-                          <h1>TAX INVOICE</h1>
-                          <p>Original for Recipient</p>
-                      </div>
-
-                      <table class="info-section">
-                          <tr>
-                              <td width="60%">
-                                  <strong style="font-size: ${paperSize === 'A5' ? '12px' : '14px'};">BILL TO:</strong><br/>
-                                  <strong>${selectedSaleForPrint.customer_name}</strong><br/>
-                                  ${selectedSaleForPrint.mobile ? `Mobile: ${selectedSaleForPrint.mobile}<br/>` : ''}
-                                  ${selectedSaleForPrint.address ? `Address: ${selectedSaleForPrint.address}<br/>` : ''}
-                                  Place: Ujjain (M.P.)
-                              </td>
-                              <td style="text-align: right;">
-                                  <strong>INVOICE DETAILS</strong><br/><br/>
-                                  <strong>Invoice No:</strong> ${selectedSaleForPrint.invoice_no}<br/>
-                                  <strong>Date:</strong> ${new Date(selectedSaleForPrint.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                              </td>
-                          </tr>
-                      </table>
-
-                      <table class="item-table">
-                          <thead>
-                              <tr>
-                                  <th width="5%">#</th>
-                                  <th width="35%" align="left">Description</th>
-                                  <th width="15%">Weight (g)</th>
-                                  <th width="15%">Rate (₹)</th>
-                                  <th width="15%">Making (₹)</th>
-                                  <th width="15%" align="right">Amount (₹)</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              ${items.map((item, i) => {
-                                  const weight = parseFloat(item.net_weight) || 0;
-                                  const rate = parseFloat(item.sale_rate) || 0;
-                                  const makingTotal = parseFloat(item.making_total) || 0;
-                                  const totalAmount = (weight * rate) + makingTotal;
-                                  const purity = item.purity || '22K';
-                                  let makingDisplay = '';
-                                  // Try to get making charge type and value from backend data
-                                  const mType = item.m_type || item.making_type || '';
-                                  const mValue = item.m_value || item.making_value || 0;
-                                  
-                                  if (mType === 'percent' && mValue) {
-                                      makingDisplay = `${mValue}%`;
-                                  } else if (mType === 'per_gram' && mValue) {
-                                      makingDisplay = `₹${mValue}/g`;
-                                  } else if (mType === 'fixed' && mValue) {
-                                      makingDisplay = `Fixed ₹${mValue}`;
-                                  } else if (makingTotal > 0) {
-                                      // Try to detect if it might be a percentage based on calculation
-                                      const weight = parseFloat(item.net_weight) || 0;
-                                      const rate = parseFloat(item.sale_rate) || 0;
-                                      const baseAmount = weight * rate;
-                                      
-                                      if (baseAmount > 0) {
-                                          const possiblePercent = (makingTotal / baseAmount) * 100;
-                                          // If it's a round number (like 5%, 10%, etc.), show as percentage
-                                          if (possiblePercent > 0 && possiblePercent <= 50 && possiblePercent === Math.round(possiblePercent)) {
-                                              makingDisplay = `${Math.round(possiblePercent)}%`;
-                                          } else {
-                                              makingDisplay = '₹' + makingTotal.toLocaleString('en-IN', {minimumFractionDigits: 2});
-                                          }
-                                      } else {
-                                          makingDisplay = '₹' + makingTotal.toLocaleString('en-IN', {minimumFractionDigits: 2});
-                                      }
-                                  } else {
-                                      makingDisplay = '₹0';
-                                  }
-                                  return `
-                                  <tr>
-                                      <td style="font-weight: bold;">${i + 1}</td>
-                                      <td class="item-desc">
-                                          <strong>${item.product_name || 'N/A'}</strong><br/>
-                                          <small>Purity: ${purity}</small>
-                                      </td>
-                                      <td style="font-weight: 500;">${weight.toFixed(3)}</td>
-                                      <td>₹${rate.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                                      <td>${makingDisplay}</td>
-                                      <td align="right" style="font-weight: bold;">₹${totalAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                                  </tr>
-                                  `;
-                              }).join('')}
-                              ${items.length < (paperSize === 'A5' ? 3 : 8) ? Array(paperSize === 'A5' ? 3 - items.length : 8 - items.length).fill('').map(() => `
-                                  <tr style="height: ${paperSize === 'A5' ? '20px' : '25px'};">
-                                      <td colspan="7"></td>
-                                  </tr>
-                              `).join('') : ''}
-                          </tbody>
-                      </table>
-
-                      <div class="calculation-section">
-                          <div class="totals-side">
-                              <table>
-                                  <tr>
-                                      <td><strong>Sub Total:</strong></td>
-                                      <td align="right"><strong>₹${subTotal.toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong></td>
-                                  </tr>
-                                  <tr>
-                                      <td>CGST (1.5%):</td>
-                                      <td align="right">₹${parseFloat(halfGst).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                                  </tr>
-                                  <tr>
-                                      <td>SGST (1.5%):</td>
-                                      <td align="right">₹${parseFloat(halfGst).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                                  </tr>
-                                  <tr style="border-top: 1px solid #000;">
-                                      <td><strong>GST Total (3%):</strong></td>
-                                      <td align="right"><strong>₹${taxAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong></td>
-                                  </tr>
-                                  <tr class="grand-total-row">
-                                      <td><strong>TOTAL AMOUNT:</strong></td>
-                                      <td align="right"><strong>₹${finalAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong></td>
-                                  </tr>
-                                  <tr>
-                                      <td colspan="2" style="font-size: ${paperSize === 'A5' ? '9px' : '10px'}; font-style: italic; padding-top: 8px;">
-                                          Amount in Words: ${numberToWords(finalAmount)} Only
-                                      </td>
-                                  </tr>
-                              </table>
-                          </div>
-                      </div>
-
-                      <div class="sig-area">
-                          <div class="sig-box">
-                              <div class="sig-line">Customer's Signature</div>
-                          </div>
-                          <div class="sig-box">
-                              <div style="margin-bottom: 5px; font-weight: bold;">For Shree Ji Jewellers</div>
-                              <div class="sig-line">Authorized Signatory</div>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-              <script>
-                  window.onload = () => {
-                      setTimeout(() => {
-                          window.print();
-                          window.close();
-                      }, 600);
-                  };
-              </script>
-          </body>
-          </html>
-        `;
-        printWindow.document.write(html);
-        printWindow.document.close();
-        if(setShowPrintModal) setShowPrintModal(false);
-    } catch (err) {
-        console.error("Print Error:", err);
-    }
-};
+  const recentPages = Math.ceil(recentSales.length / perPage) || 1;
+  const recentData = recentSales.slice((recentPage - 1) * perPage, recentPage * perPage);
 
   return (
-    <div className="sales-container">
-      
-      <div className="sales-header">
-        <div className="header-content">
-          <h1 className="page-title">Sales Management</h1>
-          <p className="page-subtitle">Manage your sales and billing efficiently</p>
+    <div className="sb-page">
+      {status.message && <div className={`sb-toast ${status.type}`}>{status.type === "success" ? <FaCheckCircle /> : <FaExclamationCircle />}<span>{status.message}</span></div>}
+
+      <header className="sb-hero">
+        <div className="sb-title"><FaCrown /><div><p>Jewellery Billing</p><h1>Sales Billing</h1><span>Scan barcode, auto-fill item details, save invoice and mark stock sold.</span></div></div>
+        <div className="sb-hero-actions">
+          {lastSale && <button onClick={() => openPrintDialog(lastSale.sale_id)}><FaPrint /> Print {lastSale.bill_no}</button>}
+          <button onClick={loadInit}><FaRecycle /> Refresh</button>
         </div>
-        <div className="header-actions">
-          <div className="tab-group">
-            <button
-              onClick={() => setActiveTab("billing")}
-              className={`tab-btn ${activeTab === "billing" ? "tab-btn-active" : ""}`}
-            >
-              <Save size={18} />
-              <span>New Bill</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("history")}
-              className={`tab-btn ${activeTab === "history" ? "tab-btn-active" : ""}`}
-            >
-              <RefreshCw size={18} />
-              <span>Sales History</span>
-            </button>
+      </header>
+
+      <div className="sb-grid">
+        <section className="sb-card bill-card">
+          <div className="sb-card-head"><FaReceipt /><h2>New Sale Bill</h2></div>
+
+          <div className="sb-customer-box">
+            <label>Customer</label>
+            <div className="sb-customer-row">
+              <div className="sb-search"><FaUser /><input value={customerSearch} onChange={(e)=>setCustomerSearch(e.target.value)} placeholder="Search customer by name/mobile" /></div>
+              <select value={bill.customer_id} onChange={(e)=>setBill({...bill, customer_id:e.target.value})}>
+                <option value="">Walk-in Customer</option>
+                {customerOptions.map(c => <option key={c.customer_id} value={c.customer_id}>{c.customer_name} - {c.mobile}</option>)}
+              </select>
+            </div>
+            {!selectedCustomer && <div className="sb-two"><input value={bill.walkin_name} onChange={(e)=>setBill({...bill, walkin_name:e.target.value})} placeholder="Walk-in name" /><input value={bill.walkin_mobile} onChange={(e)=>setBill({...bill, walkin_mobile:e.target.value.replace(/\D/g,'').slice(0,10)})} placeholder="Mobile optional" /></div>}
+            {selectedCustomer && <div className="sb-selected"><b>{selectedCustomer.customer_name}</b><span>{selectedCustomer.mobile} • {selectedCustomer.address || "No address"}</span></div>}
           </div>
-          <button
-            onClick={fetchSalesHistory}
-            className="icon-btn"
-            title="Refresh"
-          >
-            <RefreshCw size={20} />
-          </button>
-        </div>
+
+          <form className="sb-scan" onSubmit={scanBarcode}>
+            <label>Barcode Scan / Search</label>
+            <div className="scan-line"><FaBarcode /><input ref={scanRef} value={barcode} onChange={(e)=>setBarcode(e.target.value)} placeholder="Scan or enter barcode" /><button type="submit"><FaSearch /> Add</button></div>
+          </form>
+
+          <div className="stock-picker">
+            <div className="sb-search"><FaSearch /><input value={stockSearch} onChange={(e)=>setStockSearch(e.target.value)} placeholder="Search available stock by barcode/product" /></div>
+            {stockSearch && <div className="stock-results">{stockOptions.length ? stockOptions.map(s => <button key={s.stock_id} onClick={()=>addStockItem(s)}><b>{s.barcode_no || `STK-${s.stock_id}`}</b><span>{s.product_name} • {s.metal_name || '-'} • {Number(s.remaining_weight || s.net_weight || 0).toFixed(3)}g</span></button>) : <p>No available stock found</p>}</div>}
+          </div>
+
+          <div className="items-table-wrap">
+            <table className="items-table"><thead><tr><th>#</th><th>Barcode</th><th>Item</th><th>Wt</th><th>Rate/g</th><th>Making</th><th>Total</th><th></th></tr></thead><tbody>
+              {items.length ? items.map((i, idx) => <tr key={i.stock_id}>
+                <td>{idx+1}</td><td><b>{i.barcode_no || `STK-${i.stock_id}`}</b></td><td><strong>{i.product_name}</strong><small>{i.metal_name || "-"} • {i.item_type || "-"} • {i.product_purity || ""}</small></td>
+                <td>{Number(i.net_weight||0).toFixed(3)}g</td>
+                <td>
+                  <div className="rate-cell">
+                    <input type="number" value={i.rate_per_gram} onChange={(e)=>updateItem(i.stock_id,"rate_per_gram",e.target.value)} />
+                    <span className={`rate-badge ${i.rate_source === "today" ? "today" : "stock"}`}>{i.rate_source === "today" ? `Today ${i.today_rate_date || ""}` : "Stock rate"}</span>
+                    <div className="rate-actions">
+                      <button type="button" onClick={() => applyStockRate(i.stock_id)}>Stock</button>
+                      <button type="button" onClick={() => applyTodayRate(i.stock_id)}>Today</button>
+                    </div>
+                  </div>
+                </td>
+                <td><div className="making-cell"><select value={i.making_charge_type} onChange={(e)=>updateItem(i.stock_id,"making_charge_type",e.target.value)}><option value="amount">₹ Amount</option><option value="percent">% Percent</option></select><input type="number" value={i.making_value} onChange={(e)=>updateItem(i.stock_id,"making_value",e.target.value)} /></div><small>₹{money(i.making_total)}</small></td>
+                <td><b>₹{money(i.item_subtotal)}</b></td><td><button className="trash" onClick={()=>removeItem(i.stock_id)}><FaTrash /></button></td>
+              </tr>) : <tr><td colSpan="8" className="empty">Scan barcode to add jewellery item</td></tr>}
+            </tbody></table>
+          </div>
+        </section>
+
+        <aside className="sb-card summary-card">
+          <div className="sb-card-head"><FaFileInvoice /><h2>Bill Summary</h2></div>
+          <label>Sale Date<input type="date" value={bill.sale_date} onChange={(e)=>setBill({...bill, sale_date:e.target.value})}/></label>
+          <label>GST %<select value={bill.tax_percent} onChange={(e)=>setBill({...bill, tax_percent:e.target.value})}><option value="3">GST 3%</option><option value="0">No GST</option><option value="5">GST 5%</option></select></label>
+          <label>Discount ₹<input type="number" value={bill.discount_amount} onChange={(e)=>setBill({...bill, discount_amount:e.target.value})}/></label>
+          <label>Paid Amount ₹<input type="number" value={bill.paid_amount} onChange={(e)=>setBill({...bill, paid_amount:e.target.value})}/></label>
+          <label>Payment Mode<select value={bill.payment_mode} onChange={(e)=>setBill({...bill, payment_mode:e.target.value})}><option>Cash</option><option>UPI</option><option>Card</option><option>Bank</option><option>Mixed</option></select></label>
+          <div className="bill-lines"><div><span>Items</span><b>{items.length}</b></div><div><span>Subtotal</span><b>₹{money(totals.subtotal)}</b></div><div><span>Discount</span><b>₹{money(totals.discount)}</b></div><div><span>GST</span><b>₹{money(totals.tax)}</b></div><div className="grand"><span>Grand Total</span><b>₹{money(totals.grand)}</b></div><div><span>Paid</span><b>₹{money(totals.paid)}</b></div><div className={totals.due > 0 ? "due" : "paid"}><span>Due</span><b>₹{money(totals.due)}</b></div></div>
+          <button className="save-sale" onClick={saveSale} disabled={saving || !items.length}>{saving ? <FaSpinner className="spin" /> : <FaSave />} Save Sale & Mark Sold</button>
+        </aside>
       </div>
 
-      {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto">
-        {/* --- Billing Form --- */}
-        {activeTab === "billing" ? (
-          <div className="billing-card">
-            <div className="card-header">
-              <h2 className="card-title">Create New Invoice</h2>
-              <p className="card-subtitle">Fill in the details to generate a new bill</p>
-            </div>
-            
-            <div className="input-grid">
-              <div className="input-field">
-                <label className="input-label">
-                  <span className="label-icon">💰</span>
-                  Today's Gold Rate
-                </label>
-                <input
-                  type="number"
-                  className="styled-input"
-                  value={goldRate}
-                  onChange={(e) => setGoldRate(e.target.value)}
-                  placeholder="Enter rate per gram"
-                />
-              </div>
+      <section className="sb-card recent-card">
+        <div className="sb-card-head"><FaReceipt /><h2>Recent Sales</h2></div>
+        <div className="recent-table-wrap"><table><thead><tr><th>Bill No</th><th>Date</th><th>Customer</th><th>Total</th><th>Paid</th><th>Due</th><th>Mode</th><th>Action</th></tr></thead><tbody>{loading ? <tr><td colSpan="8" className="empty">Loading...</td></tr> : recentData.length ? recentData.map(s => <tr key={s.sale_id}><td><b>{s.bill_no}</b></td><td>{s.sale_date}</td><td>{s.customer_name}</td><td>₹{money(s.grand_total || s.total_amount)}</td><td>₹{money(s.paid_amount)}</td><td>₹{money(s.due_amount)}</td><td>{s.payment_mode}</td><td><button onClick={()=>openPrintDialog(s.sale_id)}><FaPrint /> Print</button></td></tr>) : <tr><td colSpan="8" className="empty">No sales found</td></tr>}</tbody></table></div>
+        <div className="sb-pagination"><button disabled={recentPage===1} onClick={()=>setRecentPage(p=>p-1)}><FaChevronLeft /></button><span>Page {recentPage} / {recentPages}</span><button disabled={recentPage===recentPages} onClick={()=>setRecentPage(p=>p+1)}><FaChevronRight /></button></div>
+      </section>
 
-              <div className="input-field">
-                <label className="input-label">
-                  <span className="label-icon">👤</span>
-                  Select Customer
-                </label>
-                <select
-                  className="styled-select"
-                  value={selectedCust}
-                  onChange={(e) => setSelectedCust(e.target.value)}
-                >
-                  <option value="">-- Choose Customer --</option>
-                  {customers.map((c) => (
-                    <option key={c.customer_id} value={c.customer_id}>
-                      {c.customer_name} {c.mobile && `(${c.mobile})`}
-                    </option>
-                  ))}
-                </select>
-              </div>
 
-              <div className="input-field">
-                <label className="input-label">
-                  <span className="label-icon">📷</span>
-                  Scan Barcode
-                </label>
-                <div className="barcode-input-wrapper">
-                  <Barcode className="barcode-icon" size={24} />
-                  <input
-                    type="text"
-                    className="barcode-input"
-                    value={barcode}
-                    onChange={handleBarcodeSearch}
-                    placeholder="Scan product barcode"
-                    autoFocus
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Cart Table */}
-            {cart.length > 0 && (
-              <>
-                <div className="table-responsive">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th className="text-left">Product Details</th>
-                        <th>Weight (g)</th>
-                        <th>Rate (₹)</th>
-                        <th>Making Type</th>
-                        <th>Making Value</th>
-                        <th className="text-right">Making Amt (₹)</th>
-                        <th className="text-right">Sub Total (₹)</th>
-                        <th className="text-center">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {cart.map((item) => (
-                        <tr key={item.id} className="table-row">
-                          <td className="product-cell">
-                            <div className="product-name">{item.product_name}</div>
-                            <div className="product-meta">Purity: {item.purity || 'N/A'}</div>
-                          </td>
-                          <td className="text-center font-medium">{parseFloat(item.net_weight).toFixed(3)}</td>
-                          <td className="text-center">
-                            <input
-                              type="number"
-                              className="table-input"
-                              value={item.sale_rate}
-                              onChange={(e) => updateRow(item.id, "sale_rate", e.target.value)}
-                            />
-                          </td>
-                          <td className="text-center">
-                            {item.m_type === "percent" && item.m_value ? (
-                              <select
-                                className="table-select"
-                                value={item.m_type}
-                                onChange={(e) => updateRow(item.id, "m_type", e.target.value)}
-                              >
-                                <option value="fixed">Fixed</option>
-                                <option value="per_gram">Per Gram</option>
-                                <option value="percent">{item.m_value}%</option>
-                              </select>
-                            ) : (
-                              <select
-                                className="table-select"
-                                value={item.m_type}
-                                onChange={(e) => updateRow(item.id, "m_type", e.target.value)}
-                              >
-                                <option value="fixed">Fixed</option>
-                                <option value="per_gram">Per Gram</option>
-                                <option value="percent">Percent</option>
-                              </select>
-                            )}
-                          </td>
-                          <td className="text-center">
-                            <input
-                              type="number"
-                              className="table-input"
-                              value={item.m_value}
-                              onChange={(e) => updateRow(item.id, "m_value", e.target.value)}
-                            />
-                          </td>
-                          <td className="text-right font-bold text-primary">₹{item.making_total?.toFixed(2)}</td>
-                          <td className="text-right font-bold text-primary">₹{item.sub_total?.toFixed(2)}</td>
-                          <td className="text-center">
-                            <button 
-                              className="delete-btn" 
-                              onClick={() => setCart(cart.filter(c => c.id !== item.id))}
-                              title="Remove Item"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            )}
-
-            {/* Empty State */}
-            {cart.length === 0 && (
-              <div className="empty-state">
-                <Barcode size={64} className="empty-icon" />
-                <h3 className="empty-title">No Items in Cart</h3>
-                <p className="empty-subtitle">Scan a barcode or add items to start billing</p>
-              </div>
-            )}
-
-            {/* Summary Box */}
-            {cart.length > 0 && (
-              <div className="summary-grid">
-                <div className="summary-card">
-                  <div className="summary-label">
-                    <span className="summary-icon">⚖️</span>
-                    Total Weight
-                  </div>
-                  <div className="summary-value">{totalWeight.toFixed(3)}g</div>
-                </div>
-                
-                <div className="summary-card">
-                  <div className="summary-label">
-                    <span className="summary-icon">📦</span>
-                    Total Items
-                  </div>
-                  <div className="summary-value">{cart.length}</div>
-                </div>
-                
-                <div className="summary-card">
-                  <div className="summary-label">
-                    <span className="summary-icon">🔨</span>
-                    Total Making
-                  </div>
-                  <div className="summary-value">₹{cart.reduce((s, i) => s + (i.making_total || 0), 0).toFixed(2)}</div>
-                </div>
-                
-                <div className="summary-card">
-                  <div className="summary-label">
-                    <span className="summary-icon">🧾</span>
-                    GST (3%)
-                  </div>
-                  <div className="summary-value">₹{taxAmount.toFixed(2)}</div>
-                </div>
-                
-                <div className="summary-card highlight">
-                  <div className="summary-label">
-                    <span className="summary-icon">💵</span>
-                    Grand Total
-                  </div>
-                  <div className="summary-value-large">₹{finalAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
-                </div>
-
-                <button className="save-bill-btn" onClick={handleSaveBill}>
-                  <Save size={22} />
-                  <span>Save Bill</span>
-                </button>
-                <div className="input-field">
-  <label className="input-label">Select Print Paper</label>
-  <select 
-    className="styled-select" 
-    value={paperSize} 
-    onChange={(e) => setPaperSize(e.target.value)}
-  >
-    <option value="A4">A4 Full Page (Multiple Items)</option>
-    <option value="A5">A5 Half Page (1-2 Items)</option>
-  </select>
-</div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="history-card">
-            <div className="card-header">
-              <h2 className="card-title">Sales History</h2>
-              <p className="card-subtitle">View and manage all past transactions</p>
-            </div>
-            
-            {currentItems.length > 0 ? (
-              <div className="table-responsive">
-                <table className="history-table">
-                  <thead>
-                    <tr>
-                      <th className="text-center">#</th>
-                      <th className="text-left">Invoice Details</th>
-                      <th>Customer Information</th>
-                      <th className="text-right">Amount Paid</th>
-                      <th className="text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentItems.map((sale, index) => (
-                      <tr key={sale.id} className="history-row">
-                        <td className="text-center font-bold">{indexOfFirstItem + index + 1}</td>
-                        <td className="invoice-cell">
-                          <div className="invoice-number">#{sale.invoice_no}</div>
-                          <div className="invoice-date">{new Date(sale.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-                        </td>
-                        <td className="customer-cell">
-                          <div className="customer-name">{sale.customer_name}</div>
-                          <div className="customer-mobile">{sale.mobile || 'N/A'}</div>
-                        </td>
-                        <td className="text-right">
-                          <div className="amount-value">₹{parseFloat(sale.final_amount || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
-                        </td>
-                        <td className="text-center">
-                          <div className="action-buttons">
-                            <button 
-                              className="action-btn print-btn" 
-                              onClick={() => openPrintDialog(sale)}
-                              title="Print"
-                            >
-                              <Printer size={18} />
-                              <span>Print</span>
-                            </button>
-                            
-                            <button 
-                              className="action-btn delete-btn-action" 
-                              onClick={() => handleDelete(sale.id)} 
-                              title="Delete Record"
-                            >
-                              <Trash2 size={18} />
-                              <span>Delete</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="empty-state">
-                <RefreshCw size={64} className="empty-icon" />
-                <h3 className="empty-title">No Sales Records Found</h3>
-                <p className="empty-subtitle">Start creating bills to see your sales history here</p>
-              </div>
-            )}
-
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="pagination-container">
-                <button 
-                  className="pagination-btn"
-                  onClick={goToPrevPage}
-                  disabled={currentPage === 1}
-                >
-                  ← Previous
-                </button>
-                
-                <div className="pagination-numbers">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                    <button
-                      key={number}
-                      className={`pagination-number ${currentPage === number ? 'active' : ''}`}
-                      onClick={() => paginate(number)}
-                    >
-                      {number}
-                    </button>
-                  ))}
-                </div>
-
-                <button 
-                  className="pagination-btn"
-                  onClick={goToNextPage}
-                  disabled={currentPage === totalPages}
-                >
-                  Next →
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Print Modal */}
       {showPrintModal && selectedSaleForPrint && (
-        <div className="print-modal-overlay">
-          <div className="print-modal-content">
-            <div className="modal-header">
-              <h3>🖨️ Print Invoice</h3>
-              <button className="close-x" onClick={() => setShowPrintModal(false)}>×</button>
+        <div className="sb-print-modal">
+          <div className="sb-print-box">
+            <button className="sb-print-close" onClick={() => setShowPrintModal(false)}><FaTimes /></button>
+            <h2>Print Invoice</h2>
+            <p><b>Bill:</b> {selectedSaleForPrint.sale.bill_no || selectedSaleForPrint.sale.invoice_no}</p>
+            <p><b>Customer:</b> {selectedSaleForPrint.sale.customer_name || selectedSaleForPrint.sale.walkin_name || "Walk-in Customer"}</p>
+            <div className="sb-paper-options">
+              <button className={paperSize === "A4" ? "active" : ""} onClick={() => setPaperSize("A4")}>A4 Full Page</button>
+              <button className={paperSize === "A5" ? "active" : ""} onClick={() => setPaperSize("A5")}>A5 Half Page</button>
             </div>
-            
-            <div className="modal-body">
-              <div className="invoice-preview">
-                <p className="invoice-label">Selected Invoice:</p>
-                <p className="invoice-number-display">#{selectedSaleForPrint.invoice_no}</p>
-                <p className="customer-name-display">{selectedSaleForPrint.customer_name}</p>
-                <p className="amount-display">₹{parseFloat(selectedSaleForPrint.final_amount || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</p>
-              </div>
-
-              <div className="paper-selection">
-                <label className="selection-label">Select Paper Size:</label>
-                <div className="paper-options">
-                  <div 
-                    className={`paper-card ${paperSize === 'A4' ? 'active' : ''}`}
-                    onClick={() => setPaperSize('A4')}
-                  >
-                    <div className="paper-icon">📄</div>
-                    <div className="paper-details">
-                      <strong>A4 Size</strong>
-                      <span>Full Page - Multiple Items</span>
-                    </div>
-                  </div>
-
-                  <div 
-                    className={`paper-card ${paperSize === 'A5' ? 'active' : ''}`}
-                    onClick={() => setPaperSize('A5')}
-                  >
-                    <div className="paper-icon">📝</div>
-                    <div className="paper-details">
-                      <strong>A5 Size</strong>
-                      <span>Half Page - Compact Format</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="modal-footer">
-              <button className="cancel-btn" onClick={() => setShowPrintModal(false)}>
-                Cancel
-              </button>
-              <button className="confirm-print-btn" onClick={handleConfirmPrint}>
-                <Printer size={18} /> 
-                Save & Print
-              </button>
-            </div>
+            <button className="sb-confirm-print" onClick={printInvoice} disabled={printLoading}>
+              <FaPrint /> {printLoading ? "Loading..." : "Print Invoice"}
+            </button>
           </div>
         </div>
       )}
     </div>
   );
-};
-
-export default SalesManager;
+}

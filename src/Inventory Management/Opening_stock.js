@@ -1,1033 +1,401 @@
-// import React, { useState, useEffect } from 'react';
-// import axios from 'axios';
-// import BASE_URLS from './apiConfig';
-// import { Trash2, Edit3, Package, Search, X, Printer, Hash } from 'lucide-react';
-
-// const StockEntryForm = () => {
-//     // 1. States
-//     const [mainCats, setMainCats] = useState([]);
-//     const [subCats, setSubCats] = useState([]);
-//     const [allProducts, setAllProducts] = useState([]);
-//     const [bills, setBills] = useState([]); 
-//     const [stockList, setStockList] = useState([]);
-//     const [filteredSubs, setFilteredSubs] = useState([]);
-//     const [filteredProducts, setFilteredProducts] = useState([]);
-
-//     const [isEditing, setIsEditing] = useState(false);
-//     const [editId, setEditId] = useState(null);
-//     const [searchTerm, setSearchTerm] = useState('');
-
-//     const [stockType, setStockType] = useState('Opening');
-//     const [billId, setBillId] = useState('');
-//     const [mainCatId, setMainCatId] = useState('');
-//     const [subCatId, setSubCatId] = useState('');
-//     const [productId, setProductId] = useState('');
-//     const [netWeight, setNetWeight] = useState('');
-//     const [quantity, setQuantity] = useState(1);
-//     const [rate, setRate] = useState('');
-//     const [purity, setPurity] = useState('22K');
-//     const [makingType, setMakingType] = useState('per_gram');
-//     const [makingValue, setMakingValue] = useState(0);
-//     const [totalCost, setTotalCost] = useState(0);
-
-//     // 2. Fetch Initial Data
-//     const fetchAllData = async () => {
-//         try {
-//             const [m, s, p, b, st] = await Promise.all([
-//                 axios.get(`${BASE_URLS}/categories_api.php?action=get_main`),
-//                 axios.get(`${BASE_URLS}/categories_api.php?action=get_all_sub`),
-//                 axios.get(`${BASE_URLS}/products_api.php?action=get_all`),
-//                 axios.get(`${BASE_URLS}/purchase_api.php?action=get_all_bills`),
-//                 axios.get(`${BASE_URLS}/stock_api.php?action=get_all`)
-//             ]);
-//             setMainCats(m.data || []);
-//             setSubCats(s.data || []);
-//             setAllProducts(p.data || []);
-//             setBills(b.data || []);
-//             setStockList(st.data || []);
-//         } catch (err) { console.error("Fetch Error"); }
-//     };
-
-//     useEffect(() => { fetchAllData(); }, []);
-
-//     // 3. BARCODE PRINT LOGIC (Aapka Design)
-//     const handlePrintTag = (item) => {
-//         const printWindow = window.open("", "_blank");
-//         const barcodeText = item.barcode || `SJ-${item.id}`;
-//         const logoUrl = "https://upload.wikimedia.org/wikipedia/en/thumb/0/0b/Bureau_of_Indian_Standards_Logo.svg/1200px-Bureau_of_Indian_Standards_Logo.svg.png";
-
-//         printWindow.document.write(`
-//           <html>
-//             <head>
-//               <link href="https://fonts.googleapis.com/css2?family=Hind:wght@700&family=Inter:wght@700&display=swap" rel="stylesheet">
-//               <style>
-//                 @media print { body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
-//                 @page { size: 85mm 25mm; margin: 0 !important; }
-//                 * { box-sizing: border-box; margin: 0; padding: 0; }
-//                 body { width: 85mm; height: 25mm; display: flex; align-items: center; justify-content: center; background: #fff; font-family: 'Inter', sans-serif; }
-//                 .tag-wrapper { width: 82mm; height: 22mm; display: flex; border: 1.5px solid #d4af37; border-radius: 4px; overflow: hidden; background: white; }
-//                 .side-brand { width: 38mm; background: #1a1a1a !important; color: #d4af37 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2mm; border-right: 1.5px solid #d4af37; }
-//                 .hindi-title { font-family: 'Hind', sans-serif; font-size: 17px; color: #f1c40f !important; margin-bottom: 2px; }
-//                 .logo-icon { height: 6mm; width: auto; margin-bottom: 3px; }
-//                 .hallmark-text { font-size: 7.5px; color: #ffffff !important; font-weight: bold; border-top: 1px solid #d4af37; padding-top: 2px; }
-//                 .side-info { width: 44mm; padding: 2mm 4mm; display: flex; flex-direction: column; justify-content: center; background: #ffffff !important; }
-//                 .v-stack { display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; }
-//                 .item-line { font-size: 10px; font-weight: 800; color: #000 !important; text-transform: uppercase; }
-//                 .weight-line { font-size: 10px; font-weight: 700; color: #333 !important; }
-//                 .weight-line span { color: #777; font-weight: 400; margin-right: 4px; }
-//                 .barcode-area { text-align: center; }
-//                 .barcode-img { width: 100%; max-width: 35mm; height: 6.5mm; }
-//                 .barcode-txt { font-size: 8px; font-family: monospace; color: #444 !important; font-weight: bold; }
-//               </style>
-//             </head>
-//             <body>
-//               <div class="tag-wrapper">
-//                 <div class="side-brand">
-//                   <div class="hindi-title">श्रीजी ज्वेलर्स</div>
-//                   <img src="${logoUrl}" class="logo-icon" />
-//                   <div class="hallmark-text">916 HALLMARK GOLD</div>
-//                 </div>
-//                 <div class="side-info">
-//                   <div class="v-stack">
-//                     <div class="item-line">${item.product_name} (${item.purity})</div>
-//                     <div class="weight-line"><span>Net Wt:</span>${parseFloat(item.net_weight).toFixed(3)}g</div>
-//                   </div>
-//                   <div class="barcode-area">
-//                     <img class="barcode-img" src="https://bwipjs-api.metafloor.com/?bcid=code128&text=${barcodeText}&scale=2&height=10" />
-//                     <div class="barcode-txt">${barcodeText}</div>
-//                   </div>
-//                 </div>
-//               </div>
-//               <script>window.onload = function() { setTimeout(() => { window.print(); window.close(); }, 500); };</script>
-//             </body>
-//           </html>
-//         `);
-//         printWindow.document.close();
-//     };
-
-//     // 4. Dropdown Cascading Logic
-//     useEffect(() => {
-//         if (!isEditing) {
-//             setFilteredSubs(subCats.filter(s => String(s.main_cat_id) === String(mainCatId)));
-//             setSubCatId(''); setProductId('');
-//         }
-//     }, [mainCatId, subCats, isEditing]);
-
-//     useEffect(() => {
-//         if (!isEditing) {
-//             setFilteredProducts(allProducts.filter(p => String(p.sub_cat_id) === String(subCatId)));
-//             setProductId('');
-//         }
-//     }, [subCatId, allProducts, isEditing]);
-
-//     // 5. Cost Calculation
-//     useEffect(() => {
-//         const w = parseFloat(netWeight) || 0;
-//         const r = parseFloat(rate) || 0;
-//         const mv = parseFloat(makingValue) || 0;
-//         const q = parseInt(quantity) || 1;
-//         let metalCost = w * r;
-//         let makingCharge = 0;
-//         if (makingType === 'per_gram') makingCharge = w * mv;
-//         else if (makingType === 'fixed') makingCharge = mv;
-//         else if (makingType === 'percent') makingCharge = (metalCost * mv) / 100;
-//         setTotalCost(((metalCost + makingCharge) * q).toFixed(2));
-//     }, [netWeight, rate, makingType, makingValue, quantity]);
-
-//     // 6. Action Handlers
-//     const handleEdit = (item) => {
-//         setIsEditing(true);
-//         setEditId(item.id);
-//         setStockType(item.stock_type);
-//         setBillId(item.purchase_bill_id || '');
-        
-//         const prod = allProducts.find(p => String(p.id) === String(item.product_id));
-//         if (prod) {
-//             const sub = subCats.find(s => String(s.id) === String(prod.sub_cat_id));
-//             const mId = sub ? sub.main_cat_id : '';
-//             setMainCatId(mId);
-//             setSubCatId(prod.sub_cat_id);
-//             setProductId(item.product_id);
-//             setFilteredSubs(subCats.filter(s => String(s.main_cat_id) === String(mId)));
-//             setFilteredProducts(allProducts.filter(p => String(p.sub_cat_id) === String(prod.sub_cat_id)));
-//         }
-
-//         setNetWeight(item.net_weight);
-//         setQuantity(item.quantity);
-//         setRate(item.rate);
-//         setPurity(item.purity);
-//         setMakingType(item.making_type);
-//         setMakingValue(item.making_value);
-//         window.scrollTo({ top: 0, behavior: 'smooth' });
-//     };
-
-//     const resetForm = () => {
-//         setIsEditing(false); setEditId(null);
-//         setStockType('Opening'); setBillId('');
-//         setMainCatId(''); setSubCatId(''); setProductId('');
-//         setNetWeight(''); setQuantity(1); setRate(''); setMakingValue(0);
-//     };
-
-//     const handleSubmit = async (e) => {
-//         e.preventDefault();
-//         const payload = {
-//             id: editId, stock_type: stockType, purchase_bill_id: stockType === 'Purchase' ? billId : null,
-//             product_id: productId, net_weight: netWeight, quantity: quantity, rate: rate,
-//             making_type: makingType, making_value: makingValue, total_cost: totalCost, purity: purity, status: 'Available'
-//         };
-
-//         try {
-//             const res = await axios.post(`${BASE_URLS}/stock_api.php`, payload);
-//             if (res.data.status === 'success') {
-//                 alert(isEditing ? "Updated!" : "Stock Added!");
-//                 resetForm(); fetchAllData();
-//             }
-//         } catch (err) { alert("Save Failed"); }
-//     };
-
-//     const handleDelete = async (id) => {
-//         if (window.confirm("Delete this item?")) {
-//             await axios.get(`${BASE_URLS}/stock_api.php?action=delete&id=${id}`);
-//             fetchAllData();
-//         }
-//     };
-
-//     return (
-//         <div className="max-w-[1500px] mx-auto p-4 md:p-6 bg-[#f4f7f6] min-h-screen">
-//             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                
-//                 {/* --- FORM SECTION --- */}
-//                 <div className="lg:col-span-4">
-//                     <div className="bg-white rounded-[2rem] shadow-2xl border border-gray-100 overflow-hidden sticky top-6">
-//                         <div className={`p-6 text-white flex justify-between items-center ${isEditing ? 'bg-orange-600' : 'bg-[#1a1a1a]'}`}>
-//                             <h2 className="font-black italic text-xl uppercase">
-//                                 {isEditing ? 'Edit Stock Item' : 'New Stock Entry'}
-//                             </h2>
-//                             {isEditing && <X className="cursor-pointer" onClick={resetForm} />}
-//                         </div>
-
-//                         <form onSubmit={handleSubmit} className="p-8 space-y-5">
-//                             <div className="grid grid-cols-2 gap-4">
-//                                 <select value={stockType} onChange={(e) => setStockType(e.target.value)} className="p-3 bg-yellow-50 border-2 border-yellow-200 rounded-xl font-bold">
-//                                     <option value="Opening">📦 Opening</option>
-//                                     <option value="Purchase">🧾 Purchase</option>
-//                                 </select>
-//                                 <select value={purity} onChange={(e) => setPurity(e.target.value)} className="p-3 bg-gray-50 border rounded-xl font-bold">
-//                                     <option value="22K">22K Gold</option>
-//                                     <option value="24K">24K Gold</option>
-//                                     <option value="18K">18K Gold</option>
-//                                 </select>
-//                             </div>
-
-//                             {stockType === 'Purchase' && (
-//                                 <select value={billId} onChange={(e) => setBillId(e.target.value)} className="w-full p-3 border-2 border-yellow-500 rounded-xl font-bold" required>
-//                                     <option value="">-- Link to Bill --</option>
-//                                     {bills.map(b => <option key={b.id} value={b.id}>{b.firm_name} (No: {b.bill_no})</option>)}
-//                                 </select>
-//                             )}
-
-//                             <div className="space-y-3 p-4 bg-gray-50 rounded-2xl border">
-//                                 <select value={mainCatId} onChange={(e) => setMainCatId(e.target.value)} className="w-full p-3 border rounded-xl" required>
-//                                     <option value="">Select Metal</option>
-//                                     {mainCats.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-//                                 </select>
-//                                 <select value={subCatId} onChange={(e) => setSubCatId(e.target.value)} className="w-full p-3 border rounded-xl" disabled={!mainCatId} required>
-//                                     <option value="">Select Category</option>
-//                                     {filteredSubs.map(s => <option key={s.id} value={s.id}>{s.sub_name}</option>)}
-//                                 </select>
-//                                 <select value={productId} onChange={(e) => setProductId(e.target.value)} className="w-full p-3 border-2 border-red-100 rounded-xl font-black bg-red-50" disabled={!subCatId} required>
-//                                     <option value="">Select Product</option>
-//                                     {filteredProducts.map(p => <option key={p.id} value={p.id}>{p.product_name}</option>)}
-//                                 </select>
-//                             </div>
-
-//                             <div className="grid grid-cols-2 gap-4">
-//                                 <input type="number" step="0.001" value={netWeight} onChange={(e) => setNetWeight(e.target.value)} className="p-3 border rounded-xl font-black" placeholder="Weight (g)" required />
-//                                 <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="p-3 border-2 border-blue-500 rounded-xl font-black text-center text-blue-600" required />
-//                             </div>
-
-//                             <div className="p-4 bg-blue-50 rounded-2xl border space-y-3">
-//                                 <div className="grid grid-cols-2 gap-3">
-//                                     <select value={makingType} onChange={(e) => setMakingType(e.target.value)} className="p-2 border rounded-lg text-xs font-bold bg-white">
-//                                         <option value="per_gram">Making/Gram</option>
-//                                         <option value="fixed">Fixed Making</option>
-//                                         <option value="percent">Making %</option>
-//                                     </select>
-//                                     <input type="number" value={makingValue} onChange={(e) => setMakingValue(e.target.value)} placeholder="Value" className="p-2 border rounded-lg font-bold" />
-//                                 </div>
-//                                 <input type="number" value={rate} onChange={(e) => setRate(e.target.value)} placeholder="Rate ₹ (per g)" className="w-full p-3 border rounded-xl font-bold text-green-700" required />
-//                             </div>
-
-//                             <div className="bg-[#1a1a1a] p-5 rounded-[2rem] text-center">
-//                                 <h3 className="text-4xl font-black text-yellow-400 italic">₹{totalCost}</h3>
-//                             </div>
-
-//                             <button type="submit" className={`w-full py-5 rounded-[2rem] font-black text-xl text-white shadow-xl ${isEditing ? 'bg-orange-600' : 'bg-[#b48c36]'}`}>
-//                                 {isEditing ? 'UPDATE STOCK 🔄' : 'SAVE TO STOCK 💾'}
-//                             </button>
-//                         </form>
-//                     </div>
-//                 </div>
-
-//                 {/* --- TABLE SECTION --- */}
-//                 <div className="lg:col-span-8">
-//                     <div className="bg-white rounded-[2.5rem] shadow-xl border overflow-hidden min-h-[85vh]">
-//                         <div className="p-8 border-b flex flex-col md:flex-row justify-between items-center gap-4">
-//                             <h3 className="text-2xl font-black italic flex items-center gap-3"><Package className="text-yellow-600" size={30}/> STOCK LEDGER</h3>
-//                             <div className="relative w-full md:w-72">
-//                                 <Search className="absolute left-4 top-3.5 text-gray-400" size={20}/>
-//                                 <input type="text" placeholder="Search Barcode..." className="w-full pl-12 pr-4 py-3 bg-gray-50 rounded-full border-none" onChange={(e)=>setSearchTerm(e.target.value)} />
-//                             </div>
-//                         </div>
-
-//                         <div className="overflow-x-auto">
-//                             <table className="w-full text-left">
-//                                 <thead className="bg-gray-50 border-b">
-//                                     <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-//                                         <th className="p-6">Barcode / Type</th>
-//                                         <th className="p-6">Product</th>
-//                                         <th className="p-6">Wt / Qty</th>
-//                                         <th className="p-6">Costing</th>
-//                                         <th className="p-6 text-center">Actions</th>
-//                                     </tr>
-//                                 </thead>
-//                                 <tbody className="divide-y divide-gray-50">
-//                                     {stockList.filter(i => i.barcode.toLowerCase().includes(searchTerm.toLowerCase()) || i.product_name.toLowerCase().includes(searchTerm.toLowerCase())).map(item => (
-//                                         <tr key={item.id} className="hover:bg-yellow-50/30 transition-all group">
-//                                             <td className="p-6">
-//                                                 <span className="font-black text-black bg-gray-100 px-3 py-1.5 rounded-lg text-xs block w-fit mb-1">{item.barcode}</span>
-//                                                 <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${item.stock_type === 'Purchase' ? 'text-blue-600 bg-blue-50' : 'text-green-600 bg-green-50'}`}>{item.stock_type}</span>
-//                                             </td>
-//                                             <td className="p-6">
-//                                                 <p className="font-black text-gray-800 uppercase text-sm">{item.product_name}</p>
-//                                                 <p className="text-[10px] text-gray-400 font-bold">{item.purity}</p>
-//                                             </td>
-//                                             <td className="p-6">
-//                                                 <p className="font-black">{item.net_weight}g</p>
-//                                                 <p className="text-[11px] font-black text-blue-500">Qty: {item.quantity}</p>
-//                                             </td>
-//                                             <td className="p-6">
-//                                                 <p className="font-black text-gray-900">₹{item.total_cost}</p>
-//                                             </td>
-//                                             <td className="p-6">
-//                                                 <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-//                                                     {/* TAG PRINT BUTTON ADDED */}
-//                                                     <button onClick={() => handlePrintTag(item)} className="p-3 bg-yellow-50 text-yellow-700 rounded-xl hover:bg-yellow-600 hover:text-white" title="Print Tag">
-//                                                         <Printer size={18}/>
-//                                                     </button>
-//                                                     <button onClick={() => handleEdit(item)} className="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white"><Edit3 size={18}/></button>
-//                                                     <button onClick={() => handleDelete(item.id)} className="p-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white"><Trash2 size={18}/></button>
-//                                                 </div>
-//                                             </td>
-//                                         </tr>
-//                                     ))}
-//                                 </tbody>
-//                             </table>
-//                         </div>
-//                     </div>
-//                 </div>
-
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default StockEntryForm;
-
-
-
-
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import axios from "axios";
-import BASE_URLS from "./apiConfig";
 import {
-Trash2,
-Edit3,
-Search,
-X,
-Printer
-} from "lucide-react";
+  FaBarcode, FaBoxOpen, FaChevronLeft, FaChevronRight, FaCrown, FaPlus,
+  FaPrint, FaRupeeSign, FaSearch, FaSpinner, FaTimes, FaTrash, FaGem,
+  FaCheckCircle, FaExclamationCircle
+} from "react-icons/fa";
+import BASE_URL from "./apiConfig";
+import "./OpeningStock.css";
 
-import "./StockEntryForm.css";
+const API = `${BASE_URL}/opening_stock.php`;
+const today = new Date().toISOString().slice(0, 10);
+const emptyCommon = { entry_date: today, metal_id: "", sub_cat_id: "", product_id: "", purity: "", making_type: "amount" };
+const emptyPiece = { net_weight: "", rate_per_gram: "", making_value: "0" };
 
-const StockEntryForm = () => {
+export default function OpeningStock() {
+  const [metals, setMetals] = useState([]);
+  const [subs, setSubs] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [purities, setPurities] = useState([]);
+  const [stock, setStock] = useState([]);
+  const [common, setCommon] = useState(emptyCommon);
+  const [pieces, setPieces] = useState([{ ...emptyPiece }]);
+  const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState({ type: "", message: "" });
+  const [search, setSearch] = useState("");
+  const [filterMetal, setFilterMetal] = useState("all");
+  const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const perPage = 10;
 
-const [mainCats,setMainCats]=useState([]);
-const [subCats,setSubCats]=useState([]);
-const [allProducts,setAllProducts]=useState([]);
-const [stockList,setStockList]=useState([]);
-const [bills,setBills]=useState([]);
+  const notify = (type, message) => {
+    setToast({ type, message });
+    setTimeout(() => setToast({ type: "", message: "" }), 3500);
+  };
 
-const [showForm,setShowForm]=useState(false);
-const [isEditing,setIsEditing]=useState(false);
-const [editId,setEditId]=useState(null);
+  const loadAll = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [m, list] = await Promise.all([
+        axios.get(`${API}?action=masters`),
+        axios.get(API)
+      ]);
+      const md = m.data || {};
+      setMetals(md.metals || []);
+      setSubs(md.subs || []);
+      setProducts(md.products || []);
+      setPurities(md.purities || []);
+      setStock(list.data?.data || []);
+    } catch {
+      notify("error", "Opening stock data load failed");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-const [searchTerm,setSearchTerm]=useState("");
-const [typeFilter,setTypeFilter]=useState("All");
-const [catFilter,setCatFilter]=useState("All");
+  useEffect(() => { loadAll(); }, [loadAll]);
 
-const [stockType,setStockType]=useState("Opening");
-const [billId,setBillId]=useState("");
+  const selectedMetalName = useMemo(
+    () => metals.find(m => String(m.id) === String(common.metal_id))?.name || "",
+    [metals, common.metal_id]
+  );
 
-const [mainCatId,setMainCatId]=useState("");
-const [subCatId,setSubCatId]=useState("");
-const [productId,setProductId]=useState("");
+  const filteredSubs = useMemo(
+    () => subs.filter(s => String(s.main_cat_id) === String(common.metal_id)),
+    [subs, common.metal_id]
+  );
 
-const [netWeight,setNetWeight]=useState("");
-const [quantity,setQuantity]=useState(1);
-const [rate,setRate]=useState("");
-const [purity,setPurity]=useState("22K");
+  const filteredProducts = useMemo(
+    () => products.filter(p => String(p.sub_cat_id) === String(common.sub_cat_id)),
+    [products, common.sub_cat_id]
+  );
 
-const [makingType,setMakingType]=useState("per_gram");
-const [makingValue,setMakingValue]=useState(0);
-const [totalCost,setTotalCost]=useState(0);
+  const filteredPurities = useMemo(
+    () => purities.filter(p => String(p.main_cat_id) === String(common.metal_id)),
+    [purities, common.metal_id]
+  );
 
-const [filteredSubs,setFilteredSubs]=useState([]);
-const [filteredProducts,setFilteredProducts]=useState([]);
+  const fetchRate = useCallback(async (metalId, purityText) => {
+    if (!metalId) return;
+    try {
+      const res = await axios.get(`${API}?action=rate&main_cat_id=${metalId}&purity=${encodeURIComponent(purityText || "")}`);
+      const rate = Number(res.data?.rate || 0);
+      if (rate > 0) {
+        setPieces(prev => prev.map(p => ({ ...p, rate_per_gram: p.rate_per_gram || String(rate) })));
+        notify("success", `${selectedMetalName || "Metal"} rate auto-filled`);
+      } else {
+        notify("error", "Selected metal/purity ka rate nahi mila. Rate Master me rate add karo.");
+      }
+    } catch {
+      notify("error", "Rate fetch failed");
+    }
+  }, [selectedMetalName]);
 
-const [currentPage,setCurrentPage]=useState(1);
-const itemsPerPage=10;
-const [selectedItems, setSelectedItems]=useState([]);
-const [selectAll, setSelectAll]=useState(false);
+  useEffect(() => {
+    if (common.metal_id) fetchRate(common.metal_id, common.purity);
+  }, [common.metal_id, common.purity, fetchRate]);
 
-const fetchAllData=async()=>{
+  const reset = () => {
+    setCommon(emptyCommon);
+    setPieces([{ ...emptyPiece }]);
+    setShowForm(false);
+  };
 
-const [m,s,p,b,st]=await Promise.all([
+  const updateCommon = (patch) => setCommon(prev => ({ ...prev, ...patch }));
 
-axios.get(`${BASE_URLS}/categories_api.php?action=get_main`),
-axios.get(`${BASE_URLS}/categories_api.php?action=get_all_sub`),
-axios.get(`${BASE_URLS}/products_api.php?action=get_all`),
-axios.get(`${BASE_URLS}/purchase_api.php?action=get_all_bills`),
-axios.get(`${BASE_URLS}/stock_api.php?action=get_all`)
+  const selectMetal = (id) => {
+    updateCommon({ metal_id: id, sub_cat_id: "", product_id: "", purity: "" });
+    setPieces([{ ...emptyPiece }]);
+  };
 
-]);
+  const setPiece = (idx, key, value) => {
+    setPieces(prev => prev.map((p, i) => i === idx ? { ...p, [key]: value } : p));
+  };
 
-setMainCats(m.data||[]);
-setSubCats(s.data||[]);
-setAllProducts(p.data||[]);
-setBills(b.data||[]);
-setStockList(st.data||[]);
+  const addPiece = () => setPieces(prev => [...prev, { ...emptyPiece, rate_per_gram: prev[0]?.rate_per_gram || "" }]);
+  const removePiece = (idx) => setPieces(prev => prev.length === 1 ? prev : prev.filter((_, i) => i !== idx));
 
+  const createRowsByQty = (qty) => {
+    const n = Math.max(1, Number(qty || 1));
+    const rate = pieces[0]?.rate_per_gram || "";
+    setPieces(Array.from({ length: n }, () => ({ ...emptyPiece, rate_per_gram: rate })));
+  };
+
+  const rowTotal = (p) => {
+    const net = Number(p.net_weight || 0);
+    const rate = Number(p.rate_per_gram || 0);
+    const mv = Number(p.making_value || 0);
+    const making = common.making_type === "percent" ? ((net * rate) * mv / 100) : mv;
+    return { making, total: (net * rate) + making };
+  };
+
+  const save = async (e) => {
+    e.preventDefault();
+    if (!common.metal_id) return notify("error", "Metal select karo");
+    if (!common.sub_cat_id) return notify("error", "Item Type select karo");
+    if (!common.product_id) return notify("error", "Product select karo");
+    if (pieces.some(p => Number(p.net_weight) <= 0)) return notify("error", "Har piece ka Net Weight daalo");
+    if (pieces.some(p => Number(p.rate_per_gram) <= 0)) return notify("error", "Rate per gram required");
+
+    setSaving(true);
+    try {
+      const res = await axios.post(API, { ...common, items: pieces });
+      if (res.data.status === "success") {
+        notify("success", res.data.message || "Opening stock saved");
+        reset();
+        loadAll();
+      } else notify("error", res.data.message || "Save failed");
+    } catch (err) {
+      notify("error", err.response?.data?.message || "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const del = async (item) => {
+    if (!window.confirm("Delete this stock item?")) return;
+    const res = await axios.delete(API, { data: { opening_stock_id: item.opening_stock_id } });
+    if (res.data.status === "success") { notify("success", "Deleted"); loadAll(); }
+    else notify("error", res.data.message || "Delete failed");
+  };
+
+const buildTagHtml = (item) => {
+  const barcodeText = item.barcode_no || `SJ-${item.stock_id}`;
+  const logoUrl = "/Bar-code Logo.jpeg";
+
+  return `
+    <div class="tag-wrapper">
+      <div class="side-brand">
+        <div class="shop-title">श्रीजी ज्वेलर्स</div>
+        <div class="logo-wrap">
+          <img class="logo-icon" src="${logoUrl}" />
+        </div>
+        <div class="hallmark-line">916 Hallmark</div>
+      </div>
+
+      <div class="side-info">
+        <div class="item-line">${item.product_name || ""}</div>
+        <div class="weight-line">
+          <span>Wt:</span> ${Number(item.net_weight || 0).toFixed(3)}g
+        </div>
+        <div class="barcode-area">
+          <img
+            class="barcode-img"
+            src="https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(barcodeText)}&scale=3&height=14"
+          />
+          <div class="barcode-txt">${barcodeText}</div>
+        </div>
+      </div>
+    </div>
+  `;
 };
 
-useEffect(()=>{
-fetchAllData();
-},[]);
+const handlePrintTags = (items) => {
+  const printItems = Array.isArray(items) ? items : [items];
+  if (!printItems.length) {
+    notify("error", "Print ke liye barcode select karo");
+    return;
+  }
 
-useEffect(()=>{
+  const printWindow = window.open("", "_blank");
 
-setFilteredSubs(
-subCats.filter(s=>String(s.main_cat_id)===String(mainCatId))
-);
+  printWindow.document.write(`
+  <html>
+    <head>
+      <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@700;900&family=Cinzel:wght@700&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
 
-if(!isEditing){
-setSubCatId("");
-setProductId("");
-}
+      <style>
+        @media print {
+          body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+        @page { size: A4; margin: 5mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { width: 210mm; background: #fff; padding: 4mm; font-family: 'Inter', sans-serif; }
+        .tags-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; align-items: start; }
+        .tag-wrapper { width: 55mm; height: 22mm; display: flex; overflow: hidden; border-radius: 8px; background: linear-gradient(135deg,#1c1108,#3b230d,#1d1209); border: 1.2px solid #d4af37; box-shadow: 0 0 6px rgba(212,175,55,.35); page-break-inside: avoid; break-inside: avoid; }
+        .side-brand { width: 18mm; background: radial-gradient(circle,#4b2b10,#1b1108); display: flex; flex-direction: column; justify-content: center; align-items: center; border-right: 1px solid rgba(212,175,55,.4); padding: .5mm; }
+        .shop-title { font-family: 'Noto Sans Devanagari', sans-serif; font-size: 8px; font-weight: 900; color: #ffd96b; text-align: center; line-height: 1.05; margin-bottom: .5mm; }
+        .logo-wrap { width: 13mm; height: 13mm; border-radius: 50%; overflow: hidden; border: 1.2px solid #d4af37; background: linear-gradient(135deg,#41240d,#221208); display: flex; justify-content: center; align-items: center; box-shadow: 0 0 5px rgba(212,175,55,.45); }
+        .logo-icon { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .hallmark-line { margin-top: .5mm; font-size: 3.5px; font-weight: 900; color: #f7d36a; text-align: center; letter-spacing: .2px; }
+        .side-info { width: 34mm; padding: .8mm 1mm; background: linear-gradient(135deg,#fff9f0,#f6e5c3); display: flex; flex-direction: column; justify-content: center; }
+        .item-line { font-size: 5.5px; font-weight: 900; color: #241507; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .weight-line { font-size: 5px; font-weight: 800; color: #6b4314; margin-top: .4mm; }
+        .weight-line span { color: #9a6d2f; }
+        .barcode-area { margin-top: .6mm; background: linear-gradient(135deg,#b5be5f,#4d2b11); border-radius: 4px; padding: .35mm; border: 1px solid rgba(212,175,55,.4); text-align: center; }
+        .barcode-img { width: 100%; max-width: 34mm; height: 8.5mm; background: #fff; border-radius: 2px; padding: .5px; object-fit: contain; }
+        .barcode-txt { margin-top: .2mm; font-size: 4.2px; line-height: 1; font-family: monospace; font-weight: 900; color: #f7d36a; letter-spacing: .2px; }
+      </style>
+    </head>
+    <body>
+      <div class="tags-container">
+        ${printItems.map(buildTagHtml).join("")}
+      </div>
+      <script>
+        window.onload = function () { setTimeout(() => { window.print(); window.close(); }, 500); };
+      </script>
+    </body>
+  </html>
+  `);
 
-},[mainCatId,subCats,isEditing]);
-
-useEffect(()=>{
-
-setFilteredProducts(
-allProducts.filter(p=>String(p.sub_cat_id)===String(subCatId))
-);
-
-if(!isEditing){
-setProductId("");
-}
-
-},[subCatId,allProducts,isEditing]);
-
-useEffect(()=>{
-
-const w=parseFloat(netWeight)||0;
-const r=parseFloat(rate)||0;
-const mv=parseFloat(makingValue)||0;
-const q=parseInt(quantity)||1;
-
-let metalCost=w*r;
-let makingCharge=0;
-
-if(makingType==="per_gram") makingCharge=w*mv;
-else if(makingType==="fixed") makingCharge=mv;
-else if(makingType==="percent") makingCharge=(metalCost*mv)/100;
-
-setTotalCost(((metalCost+makingCharge)*q).toFixed(2));
-
-},[netWeight,rate,makingType,makingValue,quantity]);
-
-const filteredStock=stockList.filter(item=>{
-
-const matchesType=
-typeFilter==="All"||
-item.stock_type?.toLowerCase()===typeFilter.toLowerCase();
-
-const matchesCat=
-catFilter==="All"||
-String(item.main_cat_id)===String(catFilter);
-
-const s=searchTerm.toLowerCase();
-
-const matchesSearch=
-item.product_name?.toLowerCase().includes(s)||
-item.barcode?.toLowerCase().includes(s);
-
-return matchesType && matchesCat && matchesSearch;
-
-});
-
-const indexLast=currentPage*itemsPerPage;
-const indexFirst=indexLast-itemsPerPage;
-
-const currentItems=filteredStock.slice(indexFirst,indexLast);
-const totalPages=Math.ceil(filteredStock.length/itemsPerPage);
-
-const handleSave=async(e)=>{
-
-e.preventDefault();
-
-const payload={
-id:editId,
-stock_type:stockType,
-purchase_bill_id:stockType==="Purchase" ? billId : null,
-product_id:productId,
-net_weight:netWeight,
-quantity,
-rate,
-making_type:makingType,
-making_value:makingValue,
-total_cost:totalCost,
-purity,
-status:"Available"
+  printWindow.document.close();
 };
 
-await axios.post(`${BASE_URLS}/stock_api.php`,payload);
-
-resetForm();
-setShowForm(false);
-setIsEditing(false);
-
-fetchAllData();
-
-};
-const resetForm = () => {
-
-setEditId(null);
-
-setStockType("Opening");
-setBillId("");
-
-setMainCatId("");
-setSubCatId("");
-setProductId("");
-
-setNetWeight("");
-setQuantity(1);
-setRate("");
-
-setPurity("22K");
-
-setMakingType("per_gram");
-setMakingValue(0);
-setTotalCost(0);
-
-};
-const handleEdit = (item) => {
-
-setIsEditing(true);
-setEditId(item.id);
-
-setStockType(item.stock_type);
-setBillId(item.purchase_bill_id || "");
-
-setNetWeight(item.net_weight);
-setQuantity(item.quantity);
-setRate(item.rate);
-setPurity(item.purity);
-setMakingType(item.making_type);
-setMakingValue(item.making_value);
-setMainCatId(item.main_cat_id);
-setSubCatId(item.sub_cat_id);
-setProductId(item.product_id);
-setStockType(item.stock_type);
-setBillId(item.purchase_bill_id || "");
-// product find
-const product = allProducts.find(
-p => String(p.id) === String(item.product_id)
-);
-
-if(product){
-
-setProductId(product.id);
-
-const sub = subCats.find(
-s => String(s.id) === String(product.sub_cat_id)
-);
-
-if(sub){
-setSubCatId(sub.id);
-setMainCatId(sub.main_cat_id);
-}
-
-}
-
-setShowForm(true);
-
+const handlePrintSelected = () => {
+  const selectedItems = filtered.filter((item) => selectedIds.includes(String(item.stock_id)));
+  handlePrintTags(selectedItems);
 };
 
-    const handlePrintTag = (item) => {
-        const printWindow = window.open("", "_blank");
-        const barcodeText = item.barcode || `SJ-${item.id}`;
-        const logoUrl = "https://upload.wikimedia.org/wikipedia/en/thumb/0/0b/Bureau_of_Indian_Standards_Logo.svg/1200px-Bureau_of_Indian_Standards_Logo.svg.png";
+const toggleSelect = (id) => {
+  const key = String(id);
+  setSelectedIds((prev) => prev.includes(key) ? prev.filter((x) => x !== key) : [...prev, key]);
+};
 
-        printWindow.document.write(`
-          <html>
-            <head>
-              <link href="https://fonts.googleapis.com/css2?family=Hind:wght@700&family=Inter:wght@700&display=swap" rel="stylesheet">
-              <style>
-                @media print { body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
-                @page { size: A4; margin: 5mm !important; }
-                * { box-sizing: border-box; margin: 0; padding: 0; }
-                body { width: 210mm; background: #fff; font-family: 'Inter', sans-serif; padding: 5mm; }
-                .tags-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3mm; }
-                .tag-wrapper { width: 100mm; height: 25mm; display: flex; border: 1.5px solid #d4af37; border-radius: 4px; overflow: hidden; background: white; page-break-inside: avoid; }
-                .side-brand { width: 45mm; background: #1a1a1a !important; color: #d4af37 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2mm; border-right: 1.5px solid #d4af37; }
-                .hindi-title { font-family: 'Hind', sans-serif; font-size: 16px; color: #f1c40f !important; margin-bottom: 2px; }
-                .logo-icon { height: 5mm; width: auto; margin-bottom: 2px; }
-                .hallmark-text { font-size: 6px; color: #ffffff !important; font-weight: bold; border-top: 1px solid #d4af37; padding-top: 1px; }
-                .side-info { width: 55mm; padding: 2mm 3mm; display: flex; flex-direction: column; justify-content: center; background: #ffffff !important; }
-                .v-stack { display: flex; flex-direction: column; gap: 1px; margin-bottom: 2px; }
-                .item-line { font-size: 9px; font-weight: 800; color: #000 !important; text-transform: uppercase; }
-                .weight-line { font-size: 9px; font-weight: 700; color: #333 !important; }
-                .weight-line span { color: #777; font-weight: 400; margin-right: 2px; }
-                .barcode-area { text-align: center; }
-                .barcode-img { width: 100%; max-width: 40mm; height: 6mm; }
-                .barcode-txt { font-size: 7px; font-family: monospace; color: #444 !important; font-weight: bold; }
-              </style>
-            </head>
-            <body>
-              <div class="tags-container">
-                ${generateMultipleTags(item, logoUrl, 8)}
+const toggleSelectAllCurrent = (checked) => {
+  const currentIds = current.map((item) => String(item.stock_id));
+  setSelectedIds((prev) => {
+    if (checked) return Array.from(new Set([...prev, ...currentIds]));
+    return prev.filter((id) => !currentIds.includes(id));
+  });
+};
+
+
+
+
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return stock.filter(i => {
+      const s = `${i.barcode_no || ""} ${i.product_name || ""} ${i.metal_name || ""} ${i.item_type || ""}`.toLowerCase().includes(q);
+      const m = filterMetal === "all" || String(i.main_cat_id) === String(filterMetal);
+      return s && m;
+    });
+  }, [stock, search, filterMetal]);
+
+  const pages = Math.ceil(filtered.length / perPage);
+  const current = filtered.slice((page - 1) * perPage, page * perPage);
+  const totalWeight = filtered.reduce((a, b) => a + Number(b.net_weight || 0), 0);
+  const totalValue = filtered.reduce((a, b) => a + Number(b.total_amount || 0), 0);
+  const money = v => Number(v || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  return (
+    <div className="os-page">
+      {toast.message && <div className={`os-toast ${toast.type}`}>{toast.type === "success" ? <FaCheckCircle /> : <FaExclamationCircle />} {toast.message}</div>}
+      <div className="os-container">
+        <header className="os-hero">
+          <div className="os-logo"><FaCrown /></div>
+          <div>
+            <h1>Opening Stock</h1>
+            <p>Simple jewellery stock entry with auto rate, multiple pieces and separate barcode.</p>
+          </div>
+          <button onClick={() => setShowForm(true)}><FaPlus /> Add Stock</button>
+        </header>
+
+        <section className="os-stats">
+          <div><FaBoxOpen /><span>Total Items</span><b>{stock.length}</b></div>
+          <div><FaGem /><span>Net Weight</span><b>{totalWeight.toFixed(3)}g</b></div>
+          <div><FaRupeeSign /><span>Total Value</span><b>₹{money(totalValue)}</b></div>
+        </section>
+
+        <section className="os-card">
+          <div className="os-toolbar">
+            <div className="os-search"><FaSearch /><input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} placeholder="Search barcode, product, metal..." /></div>
+            <select value={filterMetal} onChange={e => { setFilterMetal(e.target.value); setPage(1); }}>
+              <option value="all">All Metals</option>
+              {metals.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+            </select>
+            {selectedIds.length > 0 && (
+              <button className="print-selected-btn" onClick={handlePrintSelected}>
+                <FaPrint /> Print Selected ({selectedIds.length})
+              </button>
+            )}
+          </div>
+
+          <div className="os-table-wrap">
+            {loading ? <div className="os-loader"><FaSpinner className="spin" /> Loading...</div> : (
+              <table className="os-table">
+                <thead><tr><th><input type="checkbox" checked={current.length > 0 && current.every(i => selectedIds.includes(String(i.stock_id)))} onChange={e => toggleSelectAllCurrent(e.target.checked)} /></th><th>#</th><th>Barcode</th><th>Product</th><th>Metal</th><th>Net Wt</th><th>Rate</th><th>Making</th><th>Total</th><th>Action</th></tr></thead>
+                <tbody>
+                  {current.length ? current.map((i, idx) => (
+                    <tr key={i.stock_id} className={selectedIds.includes(String(i.stock_id)) ? "selected-row" : ""}>
+                      <td><input type="checkbox" checked={selectedIds.includes(String(i.stock_id))} onChange={() => toggleSelect(i.stock_id)} /></td>
+                      <td>{(page - 1) * perPage + idx + 1}</td>
+                      <td><b className="code"><FaBarcode /> {i.barcode_no}</b></td>
+                      <td><strong>{i.product_name}</strong><small>{i.item_type || "-"}</small></td>
+                      <td>{i.metal_name || "-"}</td>
+                      <td>{Number(i.net_weight || 0).toFixed(3)}g</td>
+                      <td>₹{money(i.rate_per_gram)}</td>
+                      <td>₹{money(i.making_charge)}</td>
+                      <td><b>₹{money(i.total_amount)}</b></td>
+                      <td><div className="os-actions"><button onClick={() => handlePrintTags(i)}><FaPrint /></button><button className="danger" onClick={() => del(i)}><FaTrash /></button></div></td>
+                    </tr>
+                  )) : <tr><td colSpan="10" className="empty">No opening stock found</td></tr>}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          <div className="os-pagination">
+            <button disabled={page === 1} onClick={() => setPage(p => p - 1)}><FaChevronLeft /></button>
+            <span>Page {page} / {pages || 1}</span>
+            <button disabled={page === pages || pages === 0} onClick={() => setPage(p => p + 1)}><FaChevronRight /></button>
+          </div>
+        </section>
+
+        {showForm && (
+          <div className="os-modal">
+            <form className="os-drawer" onSubmit={save}>
+              <div className="drawer-head"><h2>Add Opening Stock</h2><button type="button" onClick={reset}><FaTimes /></button></div>
+
+              <div className="form-grid">
+                <label>Entry Date<input type="date" value={common.entry_date} onChange={e => updateCommon({ entry_date: e.target.value })} /></label>
+                <label>Metal<select value={common.metal_id} onChange={e => selectMetal(e.target.value)}>
+                  <option value="">Select Metal</option>{metals.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                </select></label>
+                <label>Item Type<select disabled={!common.metal_id} value={common.sub_cat_id} onChange={e => updateCommon({ sub_cat_id: e.target.value, product_id: "" })}>
+                  <option value="">{common.metal_id ? "Select Item Type" : "Select metal first"}</option>{filteredSubs.map(s => <option key={s.id} value={s.id}>{s.sub_name}</option>)}
+                </select>{common.metal_id && filteredSubs.length === 0 && <small className="warn">No item type found for this metal.</small>}</label>
+                <label>Product<select disabled={!common.sub_cat_id} value={common.product_id} onChange={e => updateCommon({ product_id: e.target.value })}>
+                  <option value="">{common.sub_cat_id ? "Select Product" : "Select item type first"}</option>{filteredProducts.map(p => <option key={p.id} value={p.id}>{p.product_name}</option>)}
+                </select>{common.sub_cat_id && filteredProducts.length === 0 && <small className="warn">Please add Product first.</small>}</label>
+                <label>Purity<select value={common.purity} onChange={e => updateCommon({ purity: e.target.value })}>
+                  <option value="">Standard / No Purity</option>
+                  {filteredPurities.map((p, idx) => <option key={`${p.purity_name}-${idx}`} value={p.purity_name}>{p.purity_name}</option>)}
+                </select></label>
+                <label>Making Type<select value={common.making_type} onChange={e => updateCommon({ making_type: e.target.value })}>
+                  <option value="amount">Direct Amount</option><option value="percent">Percent (%)</option>
+                </select></label>
               </div>
-              <script>window.onload = function() { setTimeout(() => { window.print(); window.close(); }, 500); };</script>
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-    };
 
-    const generateMultipleTags = (item, logoUrl, count) => {
-        const barcodeText = item.barcode || `SJ-${item.id}`;
-        let tags = '';
-        for (let i = 0; i < count; i++) {
-            tags += `
-                <div class="tag-wrapper">
-                  <div class="side-brand">
-                    <div class="hindi-title">श्रीजी ज्वेलर्स</div>
-                    <img src="${logoUrl}" class="logo-icon" />
-                    <div class="hallmark-text">916 HALLMARK GOLD</div>
-                  </div>
-                  <div class="side-info">
-                    <div class="v-stack">
-                      <div class="item-line">${item.product_name} (${item.purity})</div>
-                      <div class="weight-line"><span>Net Wt:</span>${parseFloat(item.net_weight).toFixed(3)}g</div>
-                    </div>
-                    <div class="barcode-area">
-                      <img class="barcode-img" src="https://bwipjs-api.metafloor.com/?bcid=code128&text=${barcodeText}&scale=2&height=10" />
-                      <div class="barcode-txt">${barcodeText}</div>
-                    </div>
-                  </div>
-                </div>
-            `;
-        }
-        return tags;
-    };
-
-    const handlePrintMultipleTags = () => {
-        const itemsToPrint = selectedItems.length > 0 ? selectedItems : currentItems.slice(0, 8);
-        if (itemsToPrint.length === 0) {
-            alert('No items to print!');
-            return;
-        }
-
-        const printWindow = window.open("", "_blank");
-        const logoUrl = "https://upload.wikimedia.org/wikipedia/en/thumb/0/0b/Bureau_of_Indian_Standards_Logo.svg/1200px-Bureau_of_Indian_Standards_Logo.svg.png";
-
-        printWindow.document.write(`
-          <html>
-            <head>
-              <link href="https://fonts.googleapis.com/css2?family=Hind:wght@700&family=Inter:wght@700&display=swap" rel="stylesheet">
-              <style>
-                @media print { body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
-                @page { size: A4; margin: 5mm !important; }
-                * { box-sizing: border-box; margin: 0; padding: 0; }
-                body { width: 210mm; background: #fff; font-family: 'Inter', sans-serif; padding: 5mm; }
-                .tags-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3mm; }
-                .tag-wrapper { width: 100mm; height: 25mm; display: flex; border: 1.5px solid #d4af37; border-radius: 4px; overflow: hidden; background: white; page-break-inside: avoid; }
-                .side-brand { width: 45mm; background: #1a1a1a !important; color: #d4af37 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2mm; border-right: 1.5px solid #d4af37; }
-                .hindi-title { font-family: 'Hind', sans-serif; font-size: 16px; color: #f1c40f !important; margin-bottom: 2px; }
-                .logo-icon { height: 5mm; width: auto; margin-bottom: 2px; }
-                .hallmark-text { font-size: 6px; color: #ffffff !important; font-weight: bold; border-top: 1px solid #d4af37; padding-top: 1px; }
-                .side-info { width: 55mm; padding: 2mm 3mm; display: flex; flex-direction: column; justify-content: center; background: #ffffff !important; }
-                .v-stack { display: flex; flex-direction: column; gap: 1px; margin-bottom: 2px; }
-                .item-line { font-size: 9px; font-weight: 800; color: #000 !important; text-transform: uppercase; }
-                .weight-line { font-size: 9px; font-weight: 700; color: #333 !important; }
-                .weight-line span { color: #777; font-weight: 400; margin-right: 2px; }
-                .barcode-area { text-align: center; }
-                .barcode-img { width: 100%; max-width: 40mm; height: 6mm; }
-                .barcode-txt { font-size: 7px; font-family: monospace; color: #444 !important; font-weight: bold; }
-              </style>
-            </head>
-            <body>
-              <div class="tags-container">
-                ${itemsToPrint.map(item => generateMultipleTags(item, logoUrl, 1)).join('')}
+              <div className="qty-row">
+                <span>How many pieces?</span>
+                <input type="number" min="1" defaultValue={pieces.length} onBlur={e => createRowsByQty(e.target.value)} />
+                <button type="button" onClick={addPiece}><FaPlus /> Add Row</button>
               </div>
-              <script>window.onload = function() { setTimeout(() => { window.print(); window.close(); }, 500); };</script>
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-    };
 
-    const handleSelectItem = (itemId) => {
-        setSelectedItems(prev => 
-            prev.includes(itemId) 
-                ? prev.filter(id => id !== itemId)
-                : [...prev, itemId]
-        );
-    };
-
-    const handleSelectAll = () => {
-        if (selectAll) {
-            setSelectedItems([]);
-        } else {
-            setSelectedItems(currentItems.map(item => item.id));
-        }
-        setSelectAll(!selectAll);
-    };
-
-
-return(
-
-<div className="stock-page">
-
-<div className="header">
-
-<h2>Shreeji Jewellery Stock</h2>
-
-<div className="header-buttons">
-<button
-className="add-btn"
-onClick={()=>{
-resetForm();
-setIsEditing(false);
-setShowForm(true);
-}}
->
-
-* Add Stock
-
-</button>
-
-{selectedItems.length > 0 && (
-<button
-className="bulk-print-btn"
-onClick={handlePrintMultipleTags}
->
-
-🏷️ Print {selectedItems.length} Tags
-
-</button>
-)}
-</div>
-
-</div>
-
-<div className="filters">
-
-<div className="search">
-
-<Search size={18}/>
-
-<input
-placeholder="Search item or barcode"
-value={searchTerm}
-onChange={(e)=>setSearchTerm(e.target.value)}
-/>
-
-</div>
-
-<select
-value={typeFilter}
-onChange={(e)=>setTypeFilter(e.target.value)}
-
->
-
-<option>All</option>
-<option>Opening</option>
-<option>Purchase</option>
-
-</select>
-
-<select
-value={catFilter}
-onChange={(e)=>setCatFilter(e.target.value)}
-
->
-
-<option value="All">All Metals</option>
-
-{mainCats.map(m=>(
-
-<option key={m.id} value={m.id}>{m.name}</option>
-))}
-
-</select>
-
-</div>
-
-<div className="table-box">
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>
-<input
-type="checkbox"
-checked={selectAll}
-onChange={handleSelectAll}
-/>
-</th>
-<th>Barcode</th>
-<th>Item</th>
-<th>Weight</th>
-<th>Value</th>
-<th>Action</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-{currentItems.map(item=>(
-
-<tr key={item.id}>
-
-<td>
-<input
-type="checkbox"
-checked={selectedItems.includes(item.id)}
-onChange={() => handleSelectItem(item.id)}
-/>
-</td>
-<td>{item.barcode}</td>
-
-<td>
-<strong>{item.product_name}</strong>
-<p>{item.purity}</p>
-</td>
-
-<td>{item.net_weight} g</td>
-
-<td>₹{item.total_cost}</td>
-
-<td className="actions">
-
-<button onClick={()=>handleEdit(item)}> <Edit3 size={16}/> </button>
-
-<button onClick={()=>handlePrintTag(item)}> <Printer size={16}/> </button>
-
-<button
-onClick={()=>{
-if(window.confirm("Delete item?"))
-axios.get(`${BASE_URLS}/stock_api.php?action=delete&id=${item.id}`).then(fetchAllData)
-}}
-
->
-
-<Trash2 size={16}/>
-
-</button>
-
-</td>
-
-</tr>
-
-))}
-
-</tbody>
-
-</table>
-
-</div>
-
-<div className="pagination">
-
-{Array.from({length:totalPages}).map((_,i)=>(
-
-<button
-key={i}
-className={currentPage===i+1?"active":""}
-onClick={()=>setCurrentPage(i+1)}
-
->
-
-{i+1}
-
-</button>
-
-))}
-
-</div>
-
-{showForm && (
-
-<div className="modal">
-
-<div className="modal-box">
-
-<div className="modal-header">
-
-<h3>{isEditing?"Edit Stock":"New Stock Entry"}</h3>
-
-<button onClick={()=>setShowForm(false)}> <X/> </button>
-
-</div>
-
-<form onSubmit={handleSave} className="form-grid">
-
-{/* STOCK TYPE */}
-<select value={stockType} onChange={(e)=>setStockType(e.target.value)}>
-<option value="Opening">Opening</option>
-<option value="Purchase">Purchase</option>
-</select>
-
-{/* PURCHASE BILL */}
-{stockType==="Purchase" && (
-<select
-value={billId}
-onChange={(e)=>setBillId(e.target.value)}
-required
->
-<option value="">Select Purchase Bill</option>
-{bills.map(b=>(
-<option key={b.id} value={b.id}>
-{b.firm_name} - {b.bill_no}
-</option>
-))}
-</select>
-)}
-
-{/* PURITY */}
-<select value={purity} onChange={(e)=>setPurity(e.target.value)}>
-<option>22K</option>
-<option>24K</option>
-<option>18K</option>
-<option>Silver</option>
-</select>
-
-{/* MAIN CATEGORY */}
-<select
-value={mainCatId}
-onChange={(e)=>setMainCatId(e.target.value)}
-required
->
-<option value="">Select Metal</option>
-{mainCats.map(m=>(
-<option key={m.id} value={m.id}>{m.name}</option>
-))}
-</select>
-
-{/* SUB CATEGORY */}
-<select
-value={subCatId}
-onChange={(e)=>setSubCatId(e.target.value)}
-disabled={!mainCatId}
-required
->
-<option value="">Select Category</option>
-{filteredSubs.map(s=>(
-<option key={s.id} value={s.id}>{s.sub_name}</option>
-))}
-</select>
-
-{/* PRODUCT */}
-<select
-value={productId}
-onChange={(e)=>setProductId(e.target.value)}
-disabled={!subCatId}
-required
->
-<option value="">Select Product</option>
-{filteredProducts.map(p=>(
-<option key={p.id} value={p.id}>{p.product_name}</option>
-))}
-</select>
-
-{/* NET WEIGHT */}
-<input
-placeholder="Net Weight"
-value={netWeight}
-onChange={(e)=>setNetWeight(e.target.value)}
-required
-/>
-
-{/* QUANTITY */}
-<input
-placeholder="Quantity"
-value={quantity}
-onChange={(e)=>setQuantity(e.target.value)}
-required
-/>
-
-{/* RATE */}
-<input
-placeholder="Gold Rate"
-value={rate}
-onChange={(e)=>setRate(e.target.value)}
-required
-/>
-
-{/* MAKING TYPE */}
-<select value={makingType} onChange={(e)=>setMakingType(e.target.value)}>
-{/* <option value="per_gram">Per Gram</option> */}
-<option value="fixed">Fixed</option>
-<option value="percent">Percent</option>
-</select>
-
-{/* MAKING VALUE */}
-<input
-placeholder="Making Value"
-value={makingValue}
-onChange={(e)=>setMakingValue(e.target.value)}
-/>
-
-{/* TOTAL */}
-<div className="total">
-Total ₹ {totalCost}
-</div>
-
-<button className="save-btn">
-Save Stock
-</button>
-
-</form>
-
-</div>
-
-</div>
-
-)}
-
-</div>
-
-);
-
-};
-
-export default StockEntryForm;
+              <div className="piece-list">
+                {pieces.map((p, idx) => {
+                  const calc = rowTotal(p);
+                  return <div className="piece" key={idx}>
+                    <div className="piece-title"><b>Piece {idx + 1}</b>{pieces.length > 1 && <button type="button" onClick={() => removePiece(idx)}><FaTrash /></button>}</div>
+                    <div className="piece-grid">
+                      <label>Net Weight (g)<input type="number" step="0.001" value={p.net_weight} onChange={e => setPiece(idx, "net_weight", e.target.value)} placeholder="5.000" /></label>
+                      <label>Rate / Gram<input type="number" step="0.01" value={p.rate_per_gram} onChange={e => setPiece(idx, "rate_per_gram", e.target.value)} placeholder="Auto from Rate Master" /></label>
+                      <label>{common.making_type === "percent" ? "Making %" : "Making Amount"}<input type="number" step="0.01" value={p.making_value} onChange={e => setPiece(idx, "making_value", e.target.value)} /></label>
+                      <div className="total-box"><span>Total</span><b>₹{money(calc.total)}</b></div>
+                    </div>
+                  </div>;
+                })}
+              </div>
+
+              <button className="save-btn" disabled={saving}>{saving ? <FaSpinner className="spin" /> : `Save ${pieces.length} Piece${pieces.length > 1 ? "s" : ""} & Generate Barcode`}</button>
+            </form>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

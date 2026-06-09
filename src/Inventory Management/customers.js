@@ -1,734 +1,398 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { 
-  FaUserPlus, FaEdit, FaTrash, FaPhoneAlt, FaSearch, 
-  FaChevronLeft, FaChevronRight, FaFileUpload, FaTimes, 
-  FaMapMarkerAlt, FaFilePdf, FaTimesCircle
-} from 'react-icons/fa';
-import BASE_URL from './apiConfig';
+import {
+  FaUserPlus,
+  FaEdit,
+  FaTrash,
+  FaSearch,
+  FaTimes,
+  FaFileUpload,
+  FaFilePdf,
+  FaPhoneAlt,
+  FaMapMarkerAlt,
+  FaEnvelope,
+  FaIdCard,
+  FaRupeeSign,
+  FaChevronLeft,
+  FaChevronRight,
+  FaCheckCircle,
+  FaExclamationCircle,
+  FaUsers,
+  FaDownload,
+  FaUndo,
+} from "react-icons/fa";
+import BASE_URL from "./apiConfig";
+import "./CustomerMaster.css";
 
 const API_BASE = `${BASE_URL}/customers.php`;
 
-export default function CustomerDashboard() {
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const isMobile = windowWidth < 768;
-  
-  const colors = {
-    deepDark: "#0f0f1a",
-    luxuryGold: "#ffd700",
-    softPink: "#fafbfc",
-    pureWhite: "#ffffff",
-    accentBrown: "#d4af37",
-    glassBorder: "rgba(255, 215, 0, 0.3)",
-    gradientStart: "#1e1e2f",
-    gradientMid: "#2d2d44",
-    gradientEnd: "#1a1a2e",
-    goldLight: "#ffe55c",
-    goldDark: "#b8860b"
-  };
-  
+const emptyForm = {
+  customer_name: "",
+  mobile: "",
+  email: "",
+  address: "",
+  gstin: "",
+  opening_balance: "0",
+  balance_type: "due",
+  dob: "",
+  id_proof_type: "Aadhar Card",
+  id_proof_number: "",
+};
+
+export default function CustomerMaster() {
   const [customers, setCustomers] = useState([]);
-  const [formData, setFormData] = useState({
-    customer_name: "", mobile: "", address: "", 
-    dob: "", id_proof_type: "Aadhar Card", id_proof_number: ""
-  });
+  const [formData, setFormData] = useState(emptyForm);
   const [file, setFile] = useState(null);
   const [editId, setEditId] = useState(null);
-  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [balanceFilter, setBalanceFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = isMobile ? 3 : 6;
+  const [status, setStatus] = useState({ type: "", msg: "" });
 
-  useEffect(() => { 
-    fetchCustomers(); 
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const itemsPerPage = 8;
+
+  const showStatus = (type, msg) => {
+    setStatus({ type, msg });
+    setTimeout(() => setStatus({ type: "", msg: "" }), 3500);
+  };
 
   const fetchCustomers = async () => {
+    setLoading(true);
     try {
       const res = await axios.get(API_BASE);
       setCustomers(res.data.customers || []);
-    } catch (err) { console.error("Error fetching data"); }
+    } catch (error) {
+      showStatus("error", "Unable to load customers");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
+  const stats = useMemo(() => {
+    const total = customers.length;
+    const dueAmount = customers
+      .filter((c) => c.balance_type === "due")
+      .reduce((sum, c) => sum + Number(c.opening_balance || 0), 0);
+    const advanceAmount = customers
+      .filter((c) => c.balance_type === "advance")
+      .reduce((sum, c) => sum + Number(c.opening_balance || 0), 0);
+    return { total, dueAmount, advanceAmount };
+  }, [customers]);
+
+  const filteredCustomers = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    return customers.filter((c) => {
+      const matchesSearch =
+        !q ||
+        c.customer_name?.toLowerCase().includes(q) ||
+        c.mobile?.includes(q) ||
+        c.email?.toLowerCase().includes(q) ||
+        c.gstin?.toLowerCase().includes(q);
+
+      const matchesBalance = balanceFilter === "all" || c.balance_type === balanceFilter;
+      return matchesSearch && matchesBalance;
+    });
+  }, [customers, searchTerm, balanceFilter]);
+
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage) || 1;
+  const currentData = filteredCustomers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const updateField = (name, value) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const validateForm = () => {
+    if (!formData.customer_name.trim()) return "Customer name is required";
+    if (!/^\d{10}$/.test(formData.mobile)) return "Mobile number must be 10 digits";
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      return "Enter a valid email address";
+    }
+    if (formData.gstin && formData.gstin.length !== 15) return "GSTIN must be 15 characters";
+    if (Number(formData.opening_balance) < 0) return "Opening balance cannot be negative";
+    if (file && file.size > 5 * 1024 * 1024) return "KYC file max size is 5MB";
+    return "";
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = new FormData();
-    Object.keys(formData).forEach(key => data.append(key, formData[key]));
-    if (file) data.append("id_proof_file", file);
+    const error = validateForm();
+    if (error) return showStatus("error", error);
 
+    setSaving(true);
     try {
       if (editId) {
         await axios.put(API_BASE, { ...formData, customer_id: editId });
-        alert("Customer updated successfully! 💎");
+        showStatus("success", "Customer updated successfully");
       } else {
+        const data = new FormData();
+        Object.entries(formData).forEach(([key, value]) => data.append(key, value ?? ""));
+        if (file) data.append("id_proof_file", file);
         await axios.post(API_BASE, data);
-        alert("Customer added successfully! ✨");
+        showStatus("success", "Customer added successfully");
       }
       resetForm();
       fetchCustomers();
-    } catch (err) { 
-      alert("Failed to save. Please try again."); 
+    } catch (error) {
+      const msg = error.response?.data?.message || "Failed to save customer";
+      showStatus("error", msg);
+    } finally {
+      setSaving(false);
     }
   };
 
   const resetForm = () => {
-    setFormData({ customer_name: "", mobile: "", address: "", dob: "", id_proof_type: "Aadhar Card", id_proof_number: "" });
-    setFile(null); setEditId(null); setIsFormVisible(false);
+    setFormData(emptyForm);
+    setFile(null);
+    setEditId(null);
+    setDrawerOpen(false);
   };
-  
+
+  const openAdd = () => {
+    setFormData(emptyForm);
+    setFile(null);
+    setEditId(null);
+    setDrawerOpen(true);
+  };
+
+  const openEdit = (customer) => {
+    setFormData({
+      customer_name: customer.customer_name || "",
+      mobile: customer.mobile || "",
+      email: customer.email || "",
+      address: customer.address || "",
+      gstin: customer.gstin || "",
+      opening_balance: customer.opening_balance || "0",
+      balance_type: customer.balance_type || "due",
+      dob: customer.dob || "",
+      id_proof_type: customer.id_proof_type || "Aadhar Card",
+      id_proof_number: customer.id_proof_number || "",
+    });
+    setFile(null);
+    setEditId(customer.customer_id);
+    setDrawerOpen(true);
+  };
+
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this customer?")) return;
+    if (!window.confirm("Delete this customer? It will be hidden from active records.")) return;
     try {
       await axios.delete(API_BASE, { data: { customer_id: id } });
-      alert("Customer deleted successfully!");
+      showStatus("success", "Customer deleted");
       fetchCustomers();
-    } catch (err) {
-      alert("Failed to delete customer.");
+    } catch (error) {
+      showStatus("error", "Failed to delete customer");
     }
   };
 
-  const filtered = customers.filter(c => 
-    c.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) || c.mobile.includes(searchTerm)
-  );
-
-  const currentData = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const formatMoney = (value) => `₹${Number(value || 0).toLocaleString("en-IN")}`;
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: `linear-gradient(135deg, ${colors.softPink} 0%, ${colors.pureWhite} 100%)`,
-      padding: isMobile ? '15px' : '30px',
-      fontFamily: "'Poppins', sans-serif"
-    }}>
-      {/* Header Banner */}
-      <header style={{
-        background: `linear-gradient(135deg, ${colors.gradientStart} 0%, ${colors.gradientMid} 50%, ${colors.gradientEnd} 100%)`,
-        padding: isMobile ? '25px 20px' : '40px 60px',
-        borderRadius: '20px',
-        marginBottom: isMobile ? '25px' : '40px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: `0 10px 40px rgba(0,0,0,0.2), inset 0 0 60px rgba(255, 215, 0, 0.1)`,
-        border: `2px solid ${colors.glassBorder}`,
-        flexWrap: 'wrap',
-        gap: '20px'
-      }}>
-        <div>
-          <h1 style={{ 
-            margin: 0, 
-            fontSize: isMobile ? '24px' : '32px', 
-            fontWeight: '900',
-            background: `linear-gradient(135deg, ${colors.luxuryGold} 0%, ${colors.goldLight} 100%)`,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            letterSpacing: '2px'
-          }}>
-            💎 Customer <span style={{fontWeight: '300'}}>Registry</span>
-          </h1>
-          <p style={{ 
-            margin: '8px 0 0', 
-            fontSize: isMobile ? '12px' : '14px', 
-            color: 'rgba(255,255,255,0.9)',
-            letterSpacing: '0.5px'
-          }}>
-            Total {customers.length} premium members
-          </p>
+    <div className="cm-page">
+      {status.msg && (
+        <div className={`cm-alert ${status.type}`}>
+          {status.type === "success" ? <FaCheckCircle /> : <FaExclamationCircle />}
+          <span>{status.msg}</span>
         </div>
+      )}
 
-        <div style={{display: 'flex', gap: isMobile ? '10px' : '20px', flexWrap: 'wrap', alignItems: 'center'}}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '100px',
-            padding: '10px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            border: `2px solid ${colors.glassBorder}`,
-            minWidth: isMobile ? '200px' : '280px',
-            position: 'relative'
-          }}>
-            <FaSearch color={searchTerm ? colors.luxuryGold : '#ccc'} />
-            <input 
-              placeholder="Search clients..." 
-              value={searchTerm}
-              onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}}
-              style={{
-                background: 'none',
-                border: 'none',
-                outline: 'none',
-                width: '100%',
-                fontSize: '14px',
-                color: colors.deepDark,
-                paddingLeft: '4px'
-              }}
-            />
-            {searchTerm && (
-              <FaTimesCircle 
-                onClick={() => setSearchTerm('')}
-                size={18}
-                color="#999"
-                style={{
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  flexShrink: 0
-                }}
-                onMouseEnter={(e) => e.target.style.color = colors.goldDark}
-                onMouseLeave={(e) => e.target.style.color = '#999'}
-              />
-            )}
+      <section className="cm-hero">
+        <div>
+          <p className="cm-kicker">Jewellery CRM</p>
+          <h1>Customer Master</h1>
+          <p className="cm-subtitle">Manage customer KYC, GSTIN, opening balance, due and advance records.</p>
+        </div>
+        <button className="cm-primary-btn" onClick={openAdd}>
+          <FaUserPlus /> New Customer
+        </button>
+      </section>
+
+      <section className="cm-stats-grid">
+        <div className="cm-stat-card">
+          <FaUsers />
+          <div>
+            <span>Total Customers</span>
+            <strong>{stats.total}</strong>
           </div>
-          <button 
-            onClick={() => setIsFormVisible(true)}
-            style={{
-              background: `linear-gradient(135deg, ${colors.luxuryGold} 0%, ${colors.goldLight} 100%)`,
-              color: colors.deepDark,
-              border: 'none',
-              padding: isMobile ? '10px 18px' : '12px 25px',
-              borderRadius: '100px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              fontSize: isMobile ? '13px' : '14px',
-              boxShadow: `0 6px 20px ${colors.luxuryGold}66`,
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+        </div>
+        <div className="cm-stat-card due">
+          <FaRupeeSign />
+          <div>
+            <span>Total Due</span>
+            <strong>{formatMoney(stats.dueAmount)}</strong>
+          </div>
+        </div>
+        <div className="cm-stat-card advance">
+          <FaDownload />
+          <div>
+            <span>Total Advance</span>
+            <strong>{formatMoney(stats.advanceAmount)}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section className="cm-panel">
+        <div className="cm-toolbar">
+          <div className="cm-search-box">
+            <FaSearch />
+            <input
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder="Search name, mobile, email or GSTIN..."
+            />
+            {searchTerm && <FaTimes className="cm-clear" onClick={() => setSearchTerm("")} />}
+          </div>
+          <select
+            className="cm-filter"
+            value={balanceFilter}
+            onChange={(e) => {
+              setBalanceFilter(e.target.value);
+              setCurrentPage(1);
             }}
           >
-            <FaUserPlus /> <span>{isMobile ? '' : 'New Customer'}</span>
+            <option value="all">All Balance</option>
+            <option value="due">Due Only</option>
+            <option value="advance">Advance Only</option>
+          </select>
+          <button className="cm-refresh" onClick={fetchCustomers} title="Refresh">
+            <FaUndo />
           </button>
         </div>
-      </header>
 
-      {/* Main Table/Card Area */}
-      <main style={{
-        maxWidth: '1400px',
-        margin: 'auto'
-      }}>
-        {isMobile ? (
-          /* Mobile Card View */
-          <div style={{
-            display: 'grid',
-            gap: '20px'
-          }}>
-            {currentData.map((c, index) => (
-              <div key={c.customer_id} style={{
-                background: '#fff',
-                padding: '20px 15px',
-                borderRadius: '18px',
-                boxShadow: '0 8px 30px rgba(0,0,0,0.1), 0 2px 10px rgba(255, 215, 0, 0.1)',
-                border: `1px solid ${colors.glassBorder}`,
-                position: 'relative'
-              }}>
-                {/* Serial Number Badge */}
-                <div style={{
-                  position: 'absolute',
-                  top: '-10px',
-                  right: '15px',
-                  background: `linear-gradient(135deg, ${colors.luxuryGold} 0%, ${colors.goldLight} 100%)`,
-                  color: colors.deepDark,
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: '800',
-                  fontSize: '16px',
-                  boxShadow: `0 4px 15px ${colors.luxuryGold}66`,
-                  border: `3px solid #fff`
-                }}>
-                  {(currentPage - 1) * itemsPerPage + index + 1}
-                </div>
-                
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  marginBottom: '15px',
-                  paddingBottom: '12px',
-                  borderBottom: `2px solid ${colors.glassBorder}`
-                }}>
-                  <div style={{
-                    width: '45px',
-                    height: '45px',
-                    borderRadius: '12px',
-                    background: `linear-gradient(135deg, ${colors.luxuryGold} 0%, ${colors.goldLight} 100%)`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontSize: '20px',
-                    fontWeight: '700',
-                    boxShadow: `0 4px 15px ${colors.luxuryGold}66`
-                  }}>
-                    {c.customer_name.charAt(0)}
-                  </div>
-                  <div style={{flex: 1}}>
-                    <div style={{fontWeight: '800', fontSize: '16px', color: colors.deepDark}}>{c.customer_name}</div>
-                    <div style={{fontSize: '11px', color: '#888'}}>Joined: {new Date(c.created_at).toLocaleDateString()}</div>
-                  </div>
-                </div>
-                
-                <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px'}}>
-                    <FaPhoneAlt size={14} color={colors.luxuryGold} />
-                    <span style={{fontWeight: '600', color: colors.deepDark}}>{c.mobile}</span>
-                  </div>
-                  <div style={{display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px'}}>
-                    <FaMapMarkerAlt size={14} color={colors.luxuryGold} />
-                    <span style={{fontWeight: '500', color: '#555', lineHeight: '1.4'}}>{c.address}</span>
-                  </div>
-                  <div style={{
-                    padding: '10px',
-                    background: `${colors.goldLight}22`,
-                    borderRadius: '10px',
-                    border: `1px solid ${colors.glassBorder}`
-                  }}>
-                    <div style={{fontSize: '11px', fontWeight: '700', color: colors.goldDark, marginBottom: '4px'}}>
-                      {c.id_proof_type}
-                    </div>
-                    <code style={{fontSize: '12px', color: colors.deepDark, fontFamily: "'Poppins', sans-serif"}}>
-                      {c.id_proof_number}
-                    </code>
-                  </div>
-                </div>
-
-                <div style={{
-                  display: 'flex',
-                  gap: '10px',
-                  marginTop: '15px',
-                  paddingTop: '15px',
-                  borderTop: `1px solid ${colors.glassBorder}`
-                }}>
-                  <button 
-                    onClick={() => {setEditId(c.customer_id); setFormData(c); setIsFormVisible(true);}}
-                    style={{
-                      flex: 1,
-                      padding: '10px',
-                      background: `linear-gradient(135deg, #3498db 0%, #2980b9 100%)`,
-                      border: 'none',
-                      color: '#fff',
-                      borderRadius: '10px',
-                      cursor: 'pointer',
-                      fontWeight: '700',
-                      fontSize: '13px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      boxShadow: '0 4px 15px rgba(52, 152, 219, 0.4)'
-                    }}
-                  >
-                    <FaEdit /> Edit
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(c.customer_id)}
-                    style={{
-                      flex: 1,
-                      padding: '10px',
-                      background: `linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)`,
-                      border: 'none',
-                      color: '#fff',
-                      borderRadius: '10px',
-                      cursor: 'pointer',
-                      fontWeight: '700',
-                      fontSize: '13px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      boxShadow: '0 4px 15px rgba(231, 76, 60, 0.4)'
-                    }}
-                  >
-                    <FaTrash /> Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          /* Desktop Table View */
-          <div style={{
-            background: '#fff',
-            borderRadius: '20px',
-            border: `1px solid ${colors.glassBorder}`,
-            overflow: 'hidden',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
-          }}>
-            <table style={{width: '100%', borderCollapse: 'collapse'}}>
-              <thead>
-                <tr>
-                  <th style={{
-                    padding: '20px',
-                    textAlign: 'center',
-                    fontSize: '11px',
-                    color: 'rgba(255,255,255,0.9)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    background: `linear-gradient(135deg, ${colors.gradientStart} 0%, ${colors.gradientMid} 100%)`,
-                    borderBottom: `2px solid ${colors.glassBorder}`,
-                    width: '80px'
-                  }}>SR. NO.</th>
-                  <th style={{
-                    padding: '20px',
-                    textAlign: 'left',
-                    fontSize: '11px',
-                    color: 'rgba(255,255,255,0.9)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    background: `linear-gradient(135deg, ${colors.gradientStart} 0%, ${colors.gradientMid} 100%)`,
-                    borderBottom: `2px solid ${colors.glassBorder}`
-                  }}>CLIENT</th>
-                  <th style={{
-                    padding: '20px',
-                    textAlign: 'left',
-                    fontSize: '11px',
-                    color: 'rgba(255,255,255,0.9)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    background: `linear-gradient(135deg, ${colors.gradientStart} 0%, ${colors.gradientMid} 100%)`,
-                    borderBottom: `2px solid ${colors.glassBorder}`
-                  }}>CONTACT INFO</th>
-                  <th style={{
-                    padding: '20px',
-                    textAlign: 'left',
-                    fontSize: '11px',
-                    color: 'rgba(255,255,255,0.9)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    background: `linear-gradient(135deg, ${colors.gradientStart} 0%, ${colors.gradientMid} 100%)`,
-                    borderBottom: `2px solid ${colors.glassBorder}`
-                  }}>KYC IDENTITY</th>
-                  <th style={{
-                    padding: '20px',
-                    textAlign: 'left',
-                    fontSize: '11px',
-                    color: 'rgba(255,255,255,0.9)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    background: `linear-gradient(135deg, ${colors.gradientStart} 0%, ${colors.gradientMid} 100%)`,
-                    borderBottom: `2px solid ${colors.glassBorder}`
-                  }}>ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentData.map((c, index) => (
+        <div className="cm-table-wrap">
+          <table className="cm-table">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Contact</th>
+                <th>GST / KYC</th>
+                <th>Opening Balance</th>
+                <th>Joined</th>
+                <th className="cm-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan="6" className="cm-empty">Loading customers...</td></tr>
+              ) : currentData.length === 0 ? (
+                <tr><td colSpan="6" className="cm-empty">No customer found</td></tr>
+              ) : (
+                currentData.map((c) => (
                   <tr key={c.customer_id}>
-                    <td style={{padding: '20px', borderBottom: `1px solid ${colors.glassBorder}`, textAlign: 'center'}}>
-                      <div style={{
-                        width: '32px',
-                        height: '32px',
-                        background: `linear-gradient(135deg, ${colors.luxuryGold} 0%, ${colors.goldLight} 100%)`,
-                        color: colors.deepDark,
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: '800',
-                        fontSize: '14px',
-                        margin: '0 auto',
-                        boxShadow: `0 3px 10px ${colors.luxuryGold}66`
-                      }}>
-                        {(currentPage - 1) * itemsPerPage + index + 1}
-                      </div>
-                    </td>
-                    <td style={{padding: '20px', borderBottom: `1px solid ${colors.glassBorder}`}}>
-                      <div style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
-                        <div style={{
-                          width: '42px',
-                          height: '42px',
-                          background: `linear-gradient(135deg, ${colors.luxuryGold} 0%, ${colors.goldLight} 100%)`,
-                          color: 'white',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: '700',
-                          fontSize: '18px',
-                          boxShadow: `0 4px 15px ${colors.luxuryGold}66`
-                        }}>
-                          {c.customer_name.charAt(0)}
-                        </div>
+                    <td>
+                      <div className="cm-customer-cell">
+                        <div className="cm-avatar">{c.customer_name?.charAt(0)?.toUpperCase() || "C"}</div>
                         <div>
-                          <div style={{fontWeight: '700', color: colors.deepDark, fontSize: '15px'}}>{c.customer_name}</div>
-                          <div style={{fontSize: '11px', color: '#888'}}>Joined: {new Date(c.created_at).toLocaleDateString()}</div>
+                          <strong>{c.customer_name}</strong>
+                          <small>{c.address || "No address"}</small>
                         </div>
                       </div>
                     </td>
-                    <td style={{padding: '20px', borderBottom: `1px solid ${colors.glassBorder}`}}>
-                      <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                        <div style={{display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: colors.deepDark}}>
-                          <FaPhoneAlt size={12} color={colors.luxuryGold} /> {c.mobile}
-                        </div>
-                        <span style={{fontSize: '12px', color: '#666', display: 'flex', alignItems: 'center', gap: '6px'}}>
-                          <FaMapMarkerAlt size={11} color={colors.luxuryGold} /> {c.address}
-                        </span>
-                      </div>
+                    <td>
+                      <div className="cm-info-line"><FaPhoneAlt /> {c.mobile}</div>
+                      <div className="cm-info-line muted"><FaEnvelope /> {c.email || "No email"}</div>
                     </td>
-                    <td style={{padding: '20px', borderBottom: `1px solid ${colors.glassBorder}`}}>
-                      <div>
-                        <span style={{
-                          background: `${colors.goldLight}22`,
-                          color: colors.goldDark,
-                          border: `1px solid ${colors.glassBorder}`,
-                          padding: '4px 10px',
-                          borderRadius: '6px',
-                          fontSize: '10px',
-                          fontWeight: '700',
-                          display: 'inline-block',
-                          marginBottom: '6px'
-                        }}>{c.id_proof_type}</span>
-                        <code style={{display: 'block', fontSize: '13px', color: colors.deepDark, fontFamily: "'Poppins', sans-serif"}}>
-                          {c.id_proof_number}
-                        </code>
-                      </div>
+                    <td>
+                      <div className="cm-info-line"><FaIdCard /> {c.gstin || "No GSTIN"}</div>
+                      <small>{c.id_proof_type || "KYC"}: {c.id_proof_number || "-"}</small>
                     </td>
-                    <td style={{padding: '20px', borderBottom: `1px solid ${colors.glassBorder}`}}>
-                      <div style={{display: 'flex', gap: '8px'}}>
-                        <button 
-                          title="Edit" 
-                          onClick={() => {setEditId(c.customer_id); setFormData(c); setIsFormVisible(true);}}
-                          style={{
-                            background: 'none',
-                            border: `2px solid ${colors.glassBorder}`,
-                            padding: '8px',
-                            borderRadius: '10px',
-                            cursor: 'pointer',
-                            color: '#3498db',
-                            transition: 'all 0.3s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        >
-                          <FaEdit size={16} />
-                        </button>
-                        <button 
-                          title="Delete" 
-                          onClick={() => handleDelete(c.customer_id)}
-                          style={{
-                            background: 'none',
-                            border: `2px solid ${colors.glassBorder}`,
-                            padding: '8px',
-                            borderRadius: '10px',
-                            cursor: 'pointer',
-                            color: '#e74c3c',
-                            transition: 'all 0.3s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        >
-                          <FaTrash size={16} />
-                        </button>
-                      </div>
+                    <td>
+                      <span className={`cm-balance ${c.balance_type === "advance" ? "advance" : "due"}`}>
+                        {c.balance_type === "advance" ? "Advance" : "Due"} {formatMoney(c.opening_balance)}
+                      </span>
+                    </td>
+                    <td>{c.created_at ? new Date(c.created_at).toLocaleDateString("en-IN") : "-"}</td>
+                    <td className="cm-actions">
+                      <button className="cm-icon-btn edit" onClick={() => openEdit(c)}><FaEdit /></button>
+                      <button className="cm-icon-btn delete" onClick={() => handleDelete(c.customer_id)}><FaTrash /></button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            
-            {/* Pagination */}
-            <div style={{
-              padding: '20px',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '20px',
-              borderTop: `2px solid ${colors.glassBorder}`
-            }}>
-              <button 
-                disabled={currentPage === 1} 
-                onClick={() => setCurrentPage(p => p - 1)} 
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: currentPage === 1 ? '#ccc' : colors.luxuryGold,
-                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                  fontSize: '18px',
-                  opacity: currentPage === 1 ? 0.5 : 1
-                }}
-              >
-                <FaChevronLeft />
-              </button>
-              <div style={{display: 'flex', gap: '5px'}}>
-                {[...Array(totalPages)].map((_, i) => (
-                  <button 
-                    key={i} 
-                    onClick={() => setCurrentPage(i+1)}
-                    style={{
-                      border: 'none',
-                      background: currentPage === i+1 ? `linear-gradient(135deg, ${colors.luxuryGold} 0%, ${colors.goldLight} 100%)` : 'none',
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '50%',
-                      cursor: 'pointer',
-                      color: currentPage === i+1 ? colors.deepDark : '#999',
-                      fontWeight: currentPage === i+1 ? '700' : '500',
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
-                    {i+1}
-                  </button>
-                ))}
-              </div>
-              <button 
-                disabled={currentPage === totalPages} 
-                onClick={() => setCurrentPage(p => p + 1)} 
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: currentPage === totalPages ? '#ccc' : colors.luxuryGold,
-                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                  fontSize: '18px',
-                  opacity: currentPage === totalPages ? 0.5 : 1
-                }}
-              >
-                <FaChevronRight />
-              </button>
-            </div>
-          </div>
-        )}
-      </main>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
-      {/* Elegant Side-Drawer Modal */}
-      {isFormVisible && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.3)',
-          backdropFilter: 'blur(5px)',
-          zIndex: 1000,
-          display: 'flex',
-          justifyContent: 'flex-end'
-        }}>
-          <div style={{
-            background: '#fff',
-            width: isMobile ? '95%' : '450px',
-            height: '100%',
-            boxShadow: `-10px 0 50px rgba(0,0,0,0.2)`,
-            animation: 'slideIn 0.4s ease-out',
-            padding: isMobile ? '25px 20px' : '40px',
-            overflowY: 'auto'
-          }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '30px',
-              paddingBottom: '15px',
-              borderBottom: `2px solid ${colors.glassBorder}`
-            }}>
-              <h3 style={{ 
-                margin: 0, 
-                fontSize: isMobile ? '20px' : '22px',
-                fontWeight: '800',
-                background: `linear-gradient(135deg, ${colors.gradientStart} 0%, ${colors.gradientMid} 100%)`,
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent"
-              }}>
-                {editId ? "✏️ Update Client" : "➕ Register Client"}
-              </h3>
-              <FaTimes 
-                onClick={resetForm} 
-                size={24} 
-                color="#999" 
-                style={{cursor: 'pointer', transition: 'all 0.3s ease'}}
-                onMouseEnter={(e) => e.target.style.color = colors.goldDark}
-                onMouseLeave={(e) => e.target.style.color = '#999'}
-              />
-            </div>
-            
-            <form onSubmit={handleSubmit} style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
-              <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                <label style={{fontSize: '11px', fontWeight: '700', color: '#666', textTransform: 'uppercase'}}>Full Name *</label>
-                <input 
-                  required 
-                  placeholder="Enter customer name" 
-                  value={formData.customer_name} 
-                  onChange={(e)=>setFormData({...formData, customer_name:e.target.value})}
-                  style={{
-                    padding: '14px',
-                    border: `2px solid ${colors.glassBorder}`,
-                    borderRadius: '12px',
-                    outline: 'none',
-                    fontSize: '14px',
-                    backgroundColor: '#f8f9fa',
-                    transition: 'all 0.3s ease'
-                  }}
-                />
+        <div className="cm-pagination">
+          <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}><FaChevronLeft /></button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <button disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}><FaChevronRight /></button>
+        </div>
+      </section>
+
+      {drawerOpen && (
+        <div className="cm-drawer-backdrop">
+          <aside className="cm-drawer">
+            <div className="cm-drawer-head">
+              <div>
+                <p>{editId ? "Update Record" : "New Registration"}</p>
+                <h2>{editId ? "Edit Customer" : "Add Customer"}</h2>
               </div>
-              
-              <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                <label style={{fontSize: '11px', fontWeight: '700', color: '#666', textTransform: 'uppercase'}}>Mobile Number *</label>
-                <div style={{position: 'relative'}}>
-                  <FaPhoneAlt style={{position: 'absolute', left: '14px', top: '14px', color: colors.luxuryGold, fontSize: '16px'}} />
-                  <input 
-                    required 
-                    placeholder="10-digit mobile number" 
-                    value={formData.mobile} 
-                    onChange={(e)=>setFormData({...formData, mobile:e.target.value})}
-                    style={{
-                      padding: '14px 14px 14px 45px',
-                      border: `2px solid ${colors.glassBorder}`,
-                      borderRadius: '12px',
-                      outline: 'none',
-                      fontSize: '14px',
-                      backgroundColor: '#f8f9fa',
-                      transition: 'all 0.3s ease'
-                    }}
-                  />
+              <button onClick={resetForm}><FaTimes /></button>
+            </div>
+
+            <form className="cm-form" onSubmit={handleSubmit}>
+              <div className="cm-field">
+                <label>Customer Name *</label>
+                <input value={formData.customer_name} onChange={(e) => updateField("customer_name", e.target.value)} placeholder="Enter full name" />
+              </div>
+
+              <div className="cm-two-col">
+                <div className="cm-field">
+                  <label>Mobile *</label>
+                  <input maxLength="10" value={formData.mobile} onChange={(e) => updateField("mobile", e.target.value.replace(/\D/g, ""))} placeholder="10-digit mobile" />
+                </div>
+                <div className="cm-field">
+                  <label>Email</label>
+                  <input value={formData.email} onChange={(e) => updateField("email", e.target.value)} placeholder="customer@email.com" />
                 </div>
               </div>
-              
-              <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                <label style={{fontSize: '11px', fontWeight: '700', color: '#666', textTransform: 'uppercase'}}>Store Address</label>
-                <textarea 
-                  placeholder="Locality, City" 
-                  value={formData.address} 
-                  onChange={(e)=>setFormData({...formData, address:e.target.value})}
-                  rows={isMobile ? 3 : 2}
-                  style={{
-                    padding: '14px',
-                    border: `2px solid ${colors.glassBorder}`,
-                    borderRadius: '12px',
-                    outline: 'none',
-                    fontSize: '14px',
-                    backgroundColor: '#f8f9fa',
-                    resize: 'vertical',
-                    fontFamily: "'Poppins', sans-serif",
-                    transition: 'all 0.3s ease'
-                  }}
-                />
+
+              <div className="cm-field">
+                <label>Address</label>
+                <textarea rows="3" value={formData.address} onChange={(e) => updateField("address", e.target.value)} placeholder="Area, city, state" />
               </div>
-              
-              <div style={{
-                display: isMobile ? 'flex' : 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '15px'
-              }}>
-                <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                  <label style={{fontSize: '11px', fontWeight: '700', color: '#666', textTransform: 'uppercase'}}>Identity Type</label>
-                  <select 
-                    value={formData.id_proof_type} 
-                    onChange={(e)=>setFormData({...formData, id_proof_type:e.target.value})}
-                    style={{
-                      padding: '14px',
-                      border: `2px solid ${colors.glassBorder}`,
-                      borderRadius: '12px',
-                      outline: 'none',
-                      fontSize: '14px',
-                      backgroundColor: '#f8f9fa',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
+
+              <div className="cm-two-col">
+                <div className="cm-field">
+                  <label>GSTIN</label>
+                  <input maxLength="15" value={formData.gstin} onChange={(e) => updateField("gstin", e.target.value.toUpperCase())} placeholder="15-character GSTIN" />
+                </div>
+                <div className="cm-field">
+                  <label>Date of Birth</label>
+                  <input type="date" value={formData.dob || ""} onChange={(e) => updateField("dob", e.target.value)} />
+                </div>
+              </div>
+
+              <div className="cm-two-col">
+                <div className="cm-field">
+                  <label>Opening Balance</label>
+                  <input type="number" min="0" value={formData.opening_balance} onChange={(e) => updateField("opening_balance", e.target.value)} />
+                </div>
+                <div className="cm-field">
+                  <label>Balance Type</label>
+                  <select value={formData.balance_type} onChange={(e) => updateField("balance_type", e.target.value)}>
+                    <option value="due">Due</option>
+                    <option value="advance">Advance</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="cm-two-col">
+                <div className="cm-field">
+                  <label>ID Proof Type</label>
+                  <select value={formData.id_proof_type} onChange={(e) => updateField("id_proof_type", e.target.value)}>
                     <option>Aadhar Card</option>
                     <option>PAN Card</option>
                     <option>Voter ID</option>
@@ -736,116 +400,30 @@ export default function CustomerDashboard() {
                     <option>Driving License</option>
                   </select>
                 </div>
-                
-                <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                  <label style={{fontSize: '11px', fontWeight: '700', color: '#666', textTransform: 'uppercase'}}>ID Number</label>
-                  <input 
-                    placeholder="Last 4 digits" 
-                    value={formData.id_proof_number} 
-                    onChange={(e)=>setFormData({...formData, id_proof_number:e.target.value})}
-                    style={{
-                      padding: '14px',
-                      border: `2px solid ${colors.glassBorder}`,
-                      borderRadius: '12px',
-                      outline: 'none',
-                      fontSize: '14px',
-                      backgroundColor: '#f8f9fa',
-                      transition: 'all 0.3s ease'
-                    }}
-                  />
+                <div className="cm-field">
+                  <label>ID Number</label>
+                  <input value={formData.id_proof_number} onChange={(e) => updateField("id_proof_number", e.target.value)} placeholder="ID number" />
                 </div>
               </div>
-              
-              <div style={{
-                border: `2px dashed ${colors.glassBorder}`,
-                padding: isMobile ? '25px' : '30px',
-                borderRadius: '16px',
-                textAlign: 'center',
-                background: `${colors.goldLight}11`,
-                cursor: 'pointer',
-                position: 'relative',
-                transition: 'all 0.3s ease'
-              }}>
-                <input 
-                  type="file" 
-                  accept="image/*,.pdf"
-                  onChange={(e) => setFile(e.target.files[0])}
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    opacity: 0,
-                    cursor: 'pointer',
-                    width: '100%',
-                    height: '100%'
-                  }}
-                />
-                <FaFileUpload size={32} color={colors.goldDark} style={{marginBottom: '10px'}} />
-                <p style={{
-                  margin: 0,
-                  fontSize: '13px',
-                  color: '#666',
-                  fontWeight: '600'
-                }}>
-                  Click to upload KYC document
-                </p>
-                <p style={{
-                  margin: '6px 0 0',
-                  fontSize: '11px',
-                  color: '#999'
-                }}>
-                  PDF or Image (Max 5MB)
-                </p>
-                {file && (
-                  <div style={{
-                    marginTop: '15px',
-                    padding: '10px',
-                    background: '#fff',
-                    borderRadius: '8px',
-                    border: `1px solid ${colors.glassBorder}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    fontSize: '12px',
-                    color: colors.goldDark,
-                    fontWeight: '600'
-                  }}>
-                    <FaFilePdf size={16} />
-                    {file.name}
-                  </div>
-                )}
-              </div>
-              
-              <button 
-                type="submit"
-                style={{
-                  padding: '16px',
-                  background: `linear-gradient(135deg, ${colors.gradientStart} 0%, ${colors.gradientMid} 100%)`,
-                  color: colors.luxuryGold,
-                  border: 'none',
-                  borderRadius: '14px',
-                  fontWeight: '800',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  boxShadow: `0 8px 25px ${colors.luxuryGold}44`,
-                  letterSpacing: '1px',
-                  textTransform: 'uppercase',
-                  marginTop: '10px'
-                }}
-              >
-                {editId ? "💫 Update Information" : "✨ Save Information"}
+
+              {!editId && (
+                <label className="cm-upload">
+                  <input type="file" accept="image/*,.pdf" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                  <FaFileUpload />
+                  <span>{file ? file.name : "Upload KYC document"}</span>
+                  <small>PDF/Image, max 5MB</small>
+                </label>
+              )}
+
+              {file && <div className="cm-file-chip"><FaFilePdf /> {file.name}</div>}
+
+              <button className="cm-save-btn" disabled={saving} type="submit">
+                {saving ? "Saving..." : editId ? "Update Customer" : "Save Customer"}
               </button>
             </form>
-          </div>
+          </aside>
         </div>
       )}
-      
-      <style>{`
-        @keyframes slideIn { 
-          from { transform: translateX(100%); } 
-          to { transform: translateX(0); } 
-        }
-      `}</style>
     </div>
   );
 }
