@@ -1,85 +1,84 @@
-import React, { useState, useEffect } from "react";
-import axios from 'axios';
-import BASE_URLS from './Inventory Management/apiConfig';
-import { 
-  FaFileInvoiceDollar, FaWarehouse, FaBox, FaShoppingCart, 
-  FaUserTie, FaUsers, FaPlusSquare, FaChartLine, FaTags, FaBars, FaGem, FaWallet, FaTools, FaSignOutAlt, FaUserShield, FaTimes,
-  FaWeightHanging, FaRupeeSign
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import BASE_URLS from "./Inventory Management/apiConfig";
+import {
+  FaBars,
+  FaBox,
+  FaChartLine,
+  FaCrown,
+  FaFileInvoiceDollar,
+  FaGem,
+  FaPlusSquare,
+  FaRecycle,
+  FaRupeeSign,
+  FaSignOutAlt,
+  FaTags,
+  FaTimes,
+  FaTools,
+  FaUserShield,
+  FaUserTie,
+  FaUsers,
+  FaWarehouse,
+  FaWeightHanging,
 } from "react-icons/fa";
 import { GiThreeLeaves } from "react-icons/gi";
 
-// --- IMPORT SECTIONS ---
-import Reports from "./Inventory Management/Reports"; 
-import SalesDashboard from "./Inventory Management/sales"; 
-import StockDashboard from "./Inventory Management/stock"; 
-import CategoryPage from "./Inventory Management/Category-Lists"; 
-import SupplierPage from "./Inventory Management/Suppliers"; 
-import CustomerPage from "./Inventory Management/customers"; 
-import PurchasePage from "./Inventory Management/purchase_lists"; 
-import OpeningStockPage from "./Inventory Management/Opening_stock";
-import CashBook from "./Inventory Management/cashbook";
-import Repairing from "./Inventory Management/Repairing";
-import Products from "./Inventory Management/Products";
-import AllUsers from "./Inventory Management/AllUsers";
 import Login from "./Inventory Management/Login";
+import AllUsers from "./Inventory Management/UserManagement";
+import MasterSetup from "./Inventory Management/Category-Lists";
+// import RateMaster from "./Inventory Management/Ra";
+import Products from "./Inventory Management/Products";
+import OpeningStock from "./Inventory Management/Opening_stock";
+import StockInventory from "./Inventory Management/stock";
+import Customers from "./Inventory Management/customers";
+import SalesBilling from "./Inventory Management/sales";
+import ProfitLoss from "./Inventory Management/Reports";
+import RepairingModule from "./Inventory Management/Repairing";
+
+const colors = {
+  deepDark: "#0f0f1a",
+  luxuryGold: "#ffd700",
+  softBg: "#f7f4ee",
+  pureWhite: "#ffffff",
+  accentBrown: "#d4af37",
+  glassBorder: "rgba(255, 215, 0, 0.28)",
+  gradientStart: "#17130f",
+  gradientMid: "#2b2118",
+  gradientEnd: "#130f0c",
+  goldLight: "#ffe55c",
+  goldDark: "#b8860b",
+};
+
+const formatMoney = (value) =>
+  Number(value || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
 const App = () => {
   const [activePage, setActivePage] = useState("dashboard");
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  
-  // Auth States
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
-  
-  // Dashboard Data States
+  const [loading, setLoading] = useState(false);
   const [dashboardData, setDashboardData] = useState({
     todaySales: 0,
-    totalProducts: 0,
+    totalSales: 0,
+    totalProfit: 0,
     totalCustomers: 0,
-    pendingOrders: 0,
+    totalProducts: 0,
+    totalStockItems: 0,
+    availableItems: 0,
+    soldItems: 0,
     totalStockWeight: 0,
     stockValue: 0,
-    totalSales: 0,
-    totalProfit: 0
+    pendingRepairs: 0,
   });
-  const [loading, setLoading] = useState(true);
 
-  // Responsive breakpoint
   const isMobile = windowWidth < 768;
 
-  // Fetch Dashboard Data
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchDashboardData();
-    }
-  }, [isAuthenticated]);
-
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`${BASE_URLS}/dashboard_api.php`);
-      if (response.data) {
-        setDashboardData({
-          todaySales: response.data.todaySales || 0,
-          totalProducts: response.data.totalProducts || 0,
-          totalCustomers: response.data.totalCustomers || 0,
-          pendingOrders: response.data.pendingOrders || 0,
-          totalStockWeight: response.data.totalStockWeight || 0,
-          stockValue: response.data.stockValue || 0,
-          totalSales: response.data.totalSales || 0,
-          totalProfit: response.data.totalProfit || 0
-        });
-      }
-      setLoading(false);
-    } catch (error) {
-      console.error('Dashboard fetch error:', error);
-      setLoading(false);
-    }
-  };
-
-  // Check login on refresh
   useEffect(() => {
     const savedUser = localStorage.getItem("shreeji_user");
     if (savedUser) {
@@ -88,14 +87,12 @@ const App = () => {
     }
   }, []);
 
-  // Handle window resize
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Auto collapse sidebar on mobile
   useEffect(() => {
     if (isMobile) {
       setCollapsed(true);
@@ -105,672 +102,303 @@ const App = () => {
     }
   }, [isMobile]);
 
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${BASE_URLS}/dashboard_api.php`);
+      setDashboardData((prev) => ({ ...prev, ...(res.data || {}) }));
+    } catch (err) {
+      console.error("Dashboard fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) fetchDashboardData();
+  }, [isAuthenticated]);
+
   const handleLogout = () => {
     localStorage.removeItem("shreeji_user");
     setIsAuthenticated(false);
     setUser(null);
   };
 
-  const colors = {
-    deepDark: "#0f0f1a",
-    luxuryGold: "#ffd700",
-    softPink: "#fafbfc",
-    pureWhite: "#ffffff",
-    accentBrown: "#d4af37",
-    glassBorder: "rgba(255, 215, 0, 0.3)",
-    gradientStart: "#1e1e2f",
-    gradientMid: "#2d2d44",
-    gradientEnd: "#1a1a2e",
-    goldLight: "#ffe55c",
-    goldDark: "#b8860b"
-  };
-
-  // --- ROLE BASED MENU FILTERING ---
   const menuItems = [
     { id: "dashboard", name: "Dashboard", icon: <FaChartLine /> },
-    ...(user?.role === "admin" ? [{ id: "AllUsers", name: "Manage Users", icon: <FaUserShield /> }] : []),
-    { id: "Reports", name: "Reports & Analytics", icon: <FaGem /> },
-    { id: "cashbook", name: "Cash Book", icon: <FaWallet /> },
-    { id: "repairing", name: "Repairs", icon: <FaTools /> },
-    { id: "sales", name: "Sales", icon: <FaFileInvoiceDollar /> },
-    { id: "purchase", name: "Purchase", icon: <FaShoppingCart /> },
-    { id: "stock", name: "Inventory", icon: <FaWarehouse /> },
+    { id: "master", name: "Master Setup", icon: <FaTags /> },
+    { id: "products", name: "Rate Master", icon: <FaRupeeSign /> },
+    // { id: "products", name: "Product Master", icon: <FaBox /> },
     { id: "opening_stock", name: "Opening Stock", icon: <FaPlusSquare /> },
-    { id: "products", name: "Products", icon: <FaBox /> },
-    { id: "category", name: "Categories", icon: <FaTags /> },
-    { id: "suppliers", name: "Suppliers", icon: <FaUserTie /> },
+    { id: "stock", name: "Stock Inventory", icon: <FaWarehouse /> },
     { id: "customers", name: "Customers", icon: <FaUsers /> },
+    { id: "sales", name: "Sales Billing", icon: <FaFileInvoiceDollar /> },
+    { id: "profit_loss", name: "Profit / Loss", icon: <FaGem /> },
+    { id: "repairing", name: "Repairing", icon: <FaTools /> },
+    ...(user?.role === "admin"
+      ? [{ id: "AllUsers", name: "Manage Users", icon: <FaUserShield /> }]
+      : []),
   ];
 
-  // 1. Show Login Page if not authenticated
   if (!isAuthenticated) {
-    return <Login setAuth={(userData) => {
-      setIsAuthenticated(true);
-      setUser(userData);
-      localStorage.setItem("shreeji_user", JSON.stringify(userData));
-    }} colors={colors} />;
+    return (
+      <Login
+        setAuth={(userData) => {
+          setIsAuthenticated(true);
+          setUser(userData);
+          localStorage.setItem("shreeji_user", JSON.stringify(userData));
+        }}
+        colors={colors}
+      />
+    );
   }
 
-  // 2. Show Dashboard if authenticated
-  return (
-    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: colors.softPink, fontFamily: "'Poppins', sans-serif", overflow: "hidden" }}>
-      
-      {/* --- MOBILE OVERLAY --- */}
-      {mobileMenuOpen && isMobile && (
-        <div 
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            zIndex: 999,
-            backdropFilter: "blur(4px)"
-          }}
-          onClick={() => setMobileMenuOpen(false)}
+  const renderPage = () => {
+    if (activePage === "dashboard") {
+      return (
+        <Dashboard
+          user={user}
+          loading={loading}
+          data={dashboardData}
+          refresh={fetchDashboardData}
+          isMobile={isMobile}
         />
-      )}
-      
-      {/* --- SIDEBAR --- */}
-      <aside style={{ 
-        width: collapsed && !isMobile ? "75px" : "260px", 
-        background: `linear-gradient(180deg, ${colors.gradientStart} 0%, ${colors.gradientMid} 35%, ${colors.gradientEnd} 100%)`,
-        padding: "18px 10px",
-        transition: "all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
-        display: "flex", 
-        flexDirection: "column",
-        position: isMobile ? "fixed" : "sticky", 
-        top: 0, 
-        height: "100vh",
-        boxShadow: "5px 0 30px rgba(0,0,0,0.3), inset 0 0 60px rgba(255, 215, 0, 0.05)", 
-        zIndex: isMobile ? 1000 : 100,
-        transform: isMobile && !mobileMenuOpen ? "translateX(-100%)" : "translateX(0)",
-        overflow: "hidden",
-        borderRight: `1px solid ${colors.glassBorder}`
-      }}>
-        {/* Logo Section */}
-        <div style={{ 
-          textAlign: "center", 
-          marginBottom: "20px", 
-          padding: collapsed && !isMobile ? "0 5px" : "0 12px",
-          borderBottom: `2px solid ${colors.glassBorder}`,
-          paddingBottom: "18px",
-          position: "relative"
-        }}>
-          <div style={{ 
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "80px",
-            height: "80px",
-            background: `radial-gradient(circle, rgba(255, 215, 0, 0.15) 0%, transparent 70%)`,
-            borderRadius: "50%",
-            zIndex: 0
-          }} />
-          <div style={{ 
-            display: "flex",
-            alignItems: "center",
-            justifyContent: collapsed && !isMobile ? "center" : "space-between",
-            gap: "12px",
-            position: "relative",
-            zIndex: 1
-          }}>
-            <div style={{
-              position: "relative",
-              animation: "float 3s ease-in-out infinite"
-            }}>
-              <GiThreeLeaves style={{ 
-                fontSize: collapsed && !isMobile ? "36px" : "42px", 
-                color: colors.luxuryGold,
-                filter: `drop-shadow(0 0 15px ${colors.luxuryGold}) brightness(1.2)`,
-                animation: "pulse 2s ease-in-out infinite"
-              }} />
-            </div>
+      );
+    }
+    return (
+      <div style={pageContainerStyle(isMobile)}>
+        {activePage === "AllUsers" && <AllUsers />}
+        {activePage === "master" && <MasterSetup />}
+        {/* {activePage === "rate" && <RateMaster />} */}
+        {activePage === "products" && <Products />}
+        {activePage === "opening_stock" && <OpeningStock />}
+        {activePage === "stock" && <StockInventory />}
+        {activePage === "customers" && <Customers />}
+        {activePage === "sales" && <SalesBilling />}
+        {activePage === "profit_loss" && <ProfitLoss />}
+        {activePage === "repairing" && <RepairingModule />}
+      </div>
+    );
+  };
+
+  return (
+    <div style={{ display: "flex", minHeight: "100vh", background: colors.softBg, fontFamily: "Poppins, Inter, sans-serif", overflow: "hidden" }}>
+      {mobileMenuOpen && isMobile && <div style={overlayStyle} onClick={() => setMobileMenuOpen(false)} />}
+
+      <aside style={sidebarStyle({ collapsed, isMobile, mobileMenuOpen })}>
+        <div style={logoBlockStyle(collapsed, isMobile)}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: collapsed && !isMobile ? "center" : "space-between", gap: 12 }}>
+            <GiThreeLeaves style={{ fontSize: collapsed && !isMobile ? 34 : 42, color: colors.luxuryGold, filter: `drop-shadow(0 0 12px ${colors.luxuryGold})` }} />
             {(!collapsed || isMobile) && (
-              <div style={{
-                animation: "slideInLeft 0.5s ease"
-              }}>
-                <div style={{ 
-                  background: `linear-gradient(135deg, ${colors.luxuryGold} 0%, ${colors.goldLight} 100%)`,
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  fontSize: "16px", 
-                  fontWeight: "900", 
-                  letterSpacing: "4px",
-                  textShadow: "0 0 30px rgba(255, 215, 0, 0.5)",
-                  marginBottom: "4px"
-                }}>
-                  SHREEJI
-                </div>
-                <div style={{ 
-                  color: "#ffffff", 
-                  fontSize: "11px", 
-                  fontWeight: "400", 
-                  letterSpacing: "3px",
-                  opacity: 0.9,
-                  textTransform: "uppercase"
-                }}>
-                  Jewellers
-                </div>
+              <div>
+                <div style={{ color: colors.luxuryGold, fontSize: 16, fontWeight: 900, letterSpacing: 3 }}>SHREEJI</div>
+                <div style={{ color: "#fff", fontSize: 11, letterSpacing: 2 }}>JEWELLERS</div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Navigation Menu */}
-        <nav style={{ 
-          flex: 1, 
-          overflowY: "auto", 
-          overflowX: "hidden", 
-          paddingRight: "3px"
-        }}>
+        <nav style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
           {menuItems.map((item, index) => (
-            <div 
+            <div
               key={item.id}
               onClick={() => {
                 setActivePage(item.id);
                 if (isMobile) setMobileMenuOpen(false);
               }}
-              style={{
-                ...menuStyle(activePage === item.id, colors, collapsed || isMobile),
-                animation: `slideInLeft ${0.3 + (index * 0.05)}s ease both`
-              }}
+              style={{ ...menuStyle(activePage === item.id, collapsed || isMobile), animation: `slideInLeft ${0.22 + index * 0.035}s ease both` }}
             >
-              <span style={{ 
-                fontSize: "18px", 
-                display: "flex", 
-                alignItems: "center", 
-                minWidth: "24px",
-                position: "relative",
-                filter: activePage === item.id ? `drop-shadow(0 0 8px ${colors.luxuryGold})` : "none"
-              }}>
-                {item.icon}
-              </span>
-              {(!collapsed || isMobile) && (
-                <span style={{ 
-                  marginLeft: "12px", 
-                  fontWeight: activePage === item.id ? "700" : "400", 
-                  fontSize: "12px",
-                  color: activePage === item.id ? "#ffffff" : "rgba(255,255,255,0.6)",
-                  whiteSpace: "nowrap",
-                  letterSpacing: activePage === item.id ? "0.5px" : "0",
-                  transition: "all 0.3s ease"
-                }}>
-                  {item.name}
-                </span>
-              )}
-              {activePage === item.id && !collapsed && (
-                <div style={{
-                  position: "absolute",
-                  right: "12px",
-                  width: "6px",
-                  height: "6px",
-                  borderRadius: "50%",
-                  background: `linear-gradient(135deg, ${colors.luxuryGold} 0%, ${colors.goldLight} 100%)`,
-                  boxShadow: `0 0 10px ${colors.luxuryGold}, 0 0 20px ${colors.goldDark}`,
-                  animation: "pulse 1.5s ease-in-out infinite"
-                }} />
-              )}
+              <span style={{ fontSize: 18, minWidth: 24, display: "flex" }}>{item.icon}</span>
+              {(!collapsed || isMobile) && <span style={{ marginLeft: 12, fontSize: 12, fontWeight: activePage === item.id ? 800 : 500 }}>{item.name}</span>}
             </div>
           ))}
         </nav>
 
-        {/* Logout Button */}
-        <div 
-          onClick={handleLogout} 
-          style={{ 
-            ...menuStyle(false, colors, collapsed || isMobile), 
-            color: "#ff4757", 
-            marginTop: "15px",
-            borderTop: `2px solid rgba(255, 71, 87, 0.3)`,
-            paddingTop: "15px",
-            background: "linear-gradient(90deg, rgba(255, 71, 87, 0.1) 0%, transparent 100%)",
-            transition: "all 0.3s ease"
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "linear-gradient(90deg, rgba(255, 71, 87, 0.2) 0%, rgba(255, 71, 87, 0.05) 100%)";
-            e.currentTarget.style.transform = "translateX(5px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "linear-gradient(90deg, rgba(255, 71, 87, 0.1) 0%, transparent 100%)";
-            e.currentTarget.style.transform = "translateX(0)";
-          }}
-        >
-          <FaSignOutAlt style={{ fontSize: "18px", filter: "drop-shadow(0 0 8px rgba(255, 71, 87, 0.5))" }} />
-          {(!collapsed || isMobile) && <span style={{ marginLeft: "12px", fontWeight: "600", fontSize: "13px" }}>Logout</span>}
+        <div onClick={handleLogout} style={{ ...menuStyle(false, collapsed || isMobile), color: "#ff5a64", borderTop: "1px solid rgba(255,90,100,.28)", marginTop: 12, paddingTop: 14 }}>
+          <FaSignOutAlt />
+          {(!collapsed || isMobile) && <span style={{ marginLeft: 12, fontSize: 13, fontWeight: 700 }}>Logout</span>}
         </div>
       </aside>
 
-      {/* --- MAIN CONTENT --- */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", position: "relative" }}>
-        
-        {/* Header */}
-        <header style={{ 
-          height: isMobile ? "60px" : "70px", 
-          background: `linear-gradient(135deg, ${colors.pureWhite} 0%, #f8f9fa 100%)`,
-          display: "flex", 
-          alignItems: "center", 
-          padding: isMobile ? "0 15px" : "0 30px", 
-          justifyContent: "space-between", 
-          boxShadow: "0 4px 25px rgba(0,0,0,0.08), 0 1px 3px rgba(255, 215, 0, 0.1)", 
-          zIndex: 90,
-          borderBottom: `2px solid ${colors.glassBorder}`,
-          position: "sticky",
-          top: 0,
-          backdropFilter: "blur(10px)"
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? "10px" : "15px" }}>
-            <button 
-              onClick={() => {
-                if (isMobile) {
-                  setMobileMenuOpen(true);
-                } else {
-                  setCollapsed(!collapsed);
-                }
-              }} 
-              style={{
-                ...iconBtnStyle(colors),
-                position: "relative",
-                overflow: "hidden"
-              }}
-            >
-              <span style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: "100%",
-                height: "100%",
-                background: `radial-gradient(circle, rgba(255, 215, 0, 0.3) 0%, transparent 70%)`,
-                opacity: 0,
-                transition: "opacity 0.3s ease"
-              }} />
-              {isMobile && mobileMenuOpen ? <FaTimes size={18} style={{ position: "relative" }} /> : <FaBars size={18} style={{ position: "relative" }} />}
-            </button>
-            
-            {isMobile && (
-              <div style={{ 
-                color: colors.luxuryGold, 
-                fontSize: "16px", 
-                fontWeight: "700",
-                letterSpacing: "1px"
-              }}>
-                SHREEJI JEWELLERS
-              </div>
-            )}
-          </div>
-          
-          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? "12px" : "18px" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <header style={topbarStyle(isMobile)}>
+          <button onClick={() => (isMobile ? setMobileMenuOpen(true) : setCollapsed(!collapsed))} style={iconBtnStyle}>
+            {isMobile && mobileMenuOpen ? <FaTimes /> : <FaBars />}
+          </button>
+          <div style={{ fontWeight: 900, color: colors.deepDark, letterSpacing: 0.4 }}>{menuItems.find((x) => x.id === activePage)?.name || "Dashboard"}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ textAlign: "right" }}>
-              <div style={{ 
-                fontSize: isMobile ? "9px" : "10px", 
-                background: `linear-gradient(135deg, ${colors.luxuryGold} 0%, ${colors.goldLight} 100%)`,
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                fontWeight: "800", 
-                letterSpacing: "1px",
-                textTransform: "uppercase",
-                marginBottom: "3px"
-              }}>
-                {user?.role}
-              </div>
-              <div style={{ 
-                fontSize: isMobile ? "13px" : "14px", 
-                color: colors.deepDark, 
-                fontWeight: "700",
-                maxWidth: isMobile ? "120px" : "180px",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                textShadow: "0 1px 2px rgba(0,0,0,0.1)"
-              }}>
-                {user?.full_name}
-              </div>
+              <div style={{ fontSize: 10, color: colors.goldDark, fontWeight: 900, textTransform: "uppercase" }}>{user?.role}</div>
+              <div style={{ fontSize: 14, fontWeight: 800, maxWidth: isMobile ? 120 : 190, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.full_name}</div>
             </div>
-            <div style={{
-              ...avatarStyle(colors),
-              width: isMobile ? "40px" : "45px",
-              height: isMobile ? "40px" : "45px",
-              fontSize: isMobile ? "18px" : "20px",
-              position: "relative"
-            }}>
-              <div style={{
-                position: "absolute",
-                inset: 0,
-                borderRadius: "14px",
-                background: `linear-gradient(135deg, ${colors.luxuryGold} 0%, ${colors.accentBrown} 100%)`,
-                opacity: 0.3,
-                filter: "blur(8px)",
-                zIndex: -1
-              }} />
-              <FaUserTie style={{ filter: "drop-shadow(0 2px 8px rgba(255, 215, 0, 0.4))" }} />
-            </div>
+            <div style={avatarStyle}><FaUserTie /></div>
           </div>
         </header>
 
-        {/* Main Content Area */}
-        <main style={{ 
-          padding: isMobile ? "15px" : "25px", 
-          flex: 1, 
-          overflowY: "auto",
-          background: `linear-gradient(135deg, #fafbfc 0%, #f0f2f5 50%, #e8eaf0 100%)`
-        }}>
-          <div style={{ animation: "fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)" }}>
-            {activePage === "dashboard" && <WelcomeOverview colors={colors} user={user} isMobile={isMobile} dashboardData={dashboardData} loading={loading} />}
-            
-            {activePage !== "dashboard" && (
-              <div style={{
-                ...pageContainerStyle(colors),
-                padding: isMobile ? "18px 12px" : "28px",
-                borderRadius: isMobile ? "16px" : "20px"
-              }}>
-                {activePage === "AllUsers" && <AllUsers />}
-                {activePage === "Reports" && <Reports />}
-                {activePage === "cashbook" && <CashBook />}
-                {activePage === "repairing" && <Repairing />}
-                {activePage === "sales" && <SalesDashboard />}
-                {activePage === "stock" && <StockDashboard />}
-                {activePage === "products" && <Products />}
-                {activePage === "category" && <CategoryPage />}
-                {activePage === "suppliers" && <SupplierPage />}
-                {activePage === "customers" && <CustomerPage />}
-                {activePage === "purchase" && <PurchasePage />}
-                {activePage === "opening_stock" && <OpeningStockPage />}
-              </div>
-            )}
-          </div>
+        <main style={{ padding: isMobile ? 14 : 24, flex: 1, overflowY: "auto", background: "linear-gradient(135deg,#faf7ef,#eef0f5)" }}>
+          {renderPage()}
         </main>
       </div>
     </div>
   );
 };
 
-// --- SUB-COMPONENTS & STYLES ---
+const Dashboard = ({ user, loading, data, refresh, isMobile }) => {
+  const cards = [
+    { title: "Today Sales", value: `₹${formatMoney(data.todaySales)}`, icon: <FaFileInvoiceDollar />, color: "#ffd700" },
+    { title: "Total Sales", value: `₹${formatMoney(data.totalSales)}`, icon: <FaChartLine />, color: "#f6c343" },
+    { title: "Profit / Loss", value: `₹${formatMoney(data.totalProfit)}`, icon: <FaGem />, color: Number(data.totalProfit) >= 0 ? "#16a34a" : "#dc2626" },
+    { title: "Stock Value", value: `₹${formatMoney(data.stockValue)}`, icon: <FaWarehouse />, color: "#b8860b" },
+    { title: "Stock Weight", value: `${Number(data.totalStockWeight || 0).toFixed(3)} g`, icon: <FaWeightHanging />, color: "#cd7f32" },
+    { title: "Available Items", value: data.availableItems || 0, icon: <FaBox />, color: "#6366f1" },
+    { title: "Sold Items", value: data.soldItems || 0, icon: <FaFileInvoiceDollar />, color: "#0ea5e9" },
+    { title: "Customers", value: data.totalCustomers || 0, icon: <FaUsers />, color: "#ec4899" },
+    { title: "Products", value: data.totalProducts || 0, icon: <FaTags />, color: "#a855f7" },
+    { title: "Pending Repairs", value: data.pendingRepairs || 0, icon: <FaTools />, color: "#f97316" },
+  ];
 
-const WelcomeOverview = ({ colors, user, isMobile, dashboardData, loading }) => (
-  <div>
-    <div style={{
-      ...bannerStyle(colors),
-      padding: isMobile ? "30px 20px" : "50px 40px",
-      marginBottom: isMobile ? "25px" : "35px",
-      position: "relative",
-      overflow: "hidden"
-    }}>
-      {/* Animated background elements */}
-      <div style={{
-        position: "absolute",
-        top: "-50%",
-        right: "-50%",
-        width: "200%",
-        height: "200%",
-        background: `radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%)`,
-        animation: "rotate 20s linear infinite"
-      }} />
-      <div style={{
-        position: "absolute",
-        top: "20%",
-        left: "10%",
-        width: "150px",
-        height: "150px",
-        background: `radial-gradient(circle, rgba(255, 215, 0, 0.15) 0%, transparent 70%)`,
-        borderRadius: "50%",
-        filter: "blur(40px)",
-        animation: "float 4s ease-in-out infinite"
-      }} />
-      <div style={{ position: 'relative', zIndex: 2 }}>
-        <h4 style={{ 
-          color: colors.luxuryGold, 
-          margin: 0, 
-          letterSpacing: "4px",
-          fontSize: isMobile ? "12px" : "14px",
-          fontWeight: "800",
-          textShadow: "0 0 20px rgba(255, 215, 0, 0.5)",
-          animation: "slideInLeft 0.6s ease"
-        }}>
-          WELCOME BACK
-        </h4>
-        <h1 style={{ 
-          margin: isMobile ? "10px 0" : "15px 0", 
-          fontSize: isMobile ? "28px" : "40px", 
-          fontWeight: "900",
-          background: `linear-gradient(135deg, #ffffff 0%, ${colors.goldLight} 100%)`,
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          textShadow: "0 4px 20px rgba(255, 215, 0, 0.3)",
-          animation: "scaleIn 0.7s ease",
-          letterSpacing: "1.5px"
-        }}>
-          {user?.full_name}
-        </h1>
-        <p style={{ 
-          opacity: 0.95, 
-          fontSize: isMobile ? "13px" : "16px",
-          color: "rgba(255,255,255,0.95)",
-          margin: isMobile ? "8px 0 0" : "12px 0 0",
-          fontWeight: "400",
-          letterSpacing: "0.8px",
-          animation: "fadeIn 0.8s ease"
-        }}>
-          Premium Jewellery Management System
-        </p>
-      </div>
-      <FaGem style={{
-        position: 'absolute', 
-        right: isMobile ? "-10px" : "-20px", 
-        bottom: isMobile ? "-10px" : "-20px", 
-        fontSize: isMobile ? "100px" : "200px", 
-        background: `linear-gradient(135deg, ${colors.luxuryGold} 0%, ${colors.goldLight} 100%)`,
-        WebkitBackgroundClip: "text",
-        WebkitTextFillColor: "transparent",
-        color: 'rgba(255, 215, 0, 0.08)',
-        transform: isMobile ? "rotate(-15deg)" : "rotate(0deg)",
-        filter: "drop-shadow(0 0 30px rgba(255, 215, 0, 0.3))",
-        animation: "pulse 3s ease-in-out infinite"
-      }} />
-    </div>
-    
-    {/* Quick Stats Cards */}
-    <div style={{
-      display: "grid",
-      gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(auto-fit, minmax(240px, 1fr))",
-      gap: isMobile ? "12px" : "20px",
-      marginBottom: isMobile ? "20px" : "30px"
-    }}>
-      {[
-        { 
-          title: "Today's Sales", 
-          value: loading ? "Loading..." : `₹${dashboardData.todaySales.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 
-          icon: <FaFileInvoiceDollar />, 
-          color: "#ffd700" 
-        },
-        { 
-          title: "Total Products", 
-          value: loading ? "Loading..." : dashboardData.totalProducts.toString(), 
-          icon: <FaBox />, 
-          color: "#ffe55c" 
-        },
-        { 
-          title: "Active Customers", 
-          value: loading ? "Loading..." : dashboardData.totalCustomers.toString(), 
-          icon: <FaUsers />, 
-          color: "#ffec8b" 
-        },
-        { 
-          title: "Pending Orders", 
-          value: loading ? "Loading..." : dashboardData.pendingOrders.toString(), 
-          icon: <FaShoppingCart />, 
-          color: "#daa520" 
-        },
-        { 
-          title: "Stock Weight", 
-          value: loading ? "Loading..." : `${dashboardData.totalStockWeight.toFixed(3)} g`, 
-          icon: <FaWeightHanging />, 
-          color: "#cd7f32" 
-        },
-        { 
-          title: "Stock Value", 
-          value: loading ? "Loading..." : `₹${dashboardData.stockValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 
-          icon: <FaRupeeSign />, 
-          color: "#b8860b" 
-        }
-      ].map((stat, index) => (
-        <div 
-          key={index} 
-          style={{
-            background: "white",
-            borderRadius: isMobile ? "14px" : "18px",
-            padding: isMobile ? "20px 15px" : "28px",
-            boxShadow: "0 8px 30px rgba(0,0,0,0.12), 0 2px 10px rgba(255, 215, 0, 0.1)",
-            border: `1px solid ${colors.glassBorder}`,
-            transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-            cursor: "pointer",
-            position: "relative",
-            overflow: "hidden",
-            animation: `scaleIn ${0.4 + (index * 0.1)}s ease both`
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translateY(-8px) scale(1.02)";
-            e.currentTarget.style.boxShadow = "0 15px 50px rgba(0,0,0,0.15), 0 5px 20px rgba(255, 215, 0, 0.2)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(0) scale(1)";
-            e.currentTarget.style.boxShadow = "0 8px 30px rgba(0,0,0,0.12), 0 2px 10px rgba(255, 215, 0, 0.1)";
-          }}
-        >
-          {/* Hover gradient effect */}
-          <div style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: `linear-gradient(135deg, ${stat.color}15 0%, transparent 100%)`,
-            opacity: 0,
-            transition: "opacity 0.4s ease"
-          }} />
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "15px",
-            position: "relative"
-          }}>
-            <div style={{
-              width: isMobile ? "50px" : "60px",
-              height: isMobile ? "50px" : "60px",
-              borderRadius: "14px",
-              background: `linear-gradient(135deg, ${stat.color} 0%, ${colors.goldDark} 100%)`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontSize: isMobile ? "22px" : "26px",
-              boxShadow: `0 6px 20px ${stat.color}66, 0 3px 10px ${colors.goldDark}44`,
-              transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
-            }}>
-              {stat.icon}
-            </div>
-          </div>
-          <div style={{ color: "#888", fontSize: isMobile ? "12px" : "13px", marginBottom: "6px", fontWeight: "600", letterSpacing: "0.5px" }}>
-            {stat.title}
-          </div>
-          <div style={{ 
-            color: colors.deepDark, 
-            fontSize: isMobile ? "24px" : "32px", 
-            fontWeight: "800",
-            textShadow: "0 2px 10px rgba(0,0,0,0.1)"
-          }}>
-            {stat.value}
-          </div>
+  return (
+    <div>
+      <section style={dashboardHeroStyle(isMobile)}>
+        <div>
+          <p style={{ margin: 0, color: colors.luxuryGold, fontWeight: 900, letterSpacing: 3 }}>WELCOME BACK</p>
+          <h1 style={{ margin: "10px 0", color: "#fff", fontSize: isMobile ? 28 : 42 }}>{user?.full_name}</h1>
+          <p style={{ margin: 0, color: "rgba(255,255,255,.8)" }}>Completed modules dashboard: stock, sales, profit, customers and repairing.</p>
         </div>
-      ))}
+        <button onClick={refresh} style={{ ...iconBtnStyle, width: "auto", padding: "12px 18px", gap: 8 }}>
+          <FaRecycle className={loading ? "spin" : ""} /> Refresh
+        </button>
+        <FaCrown style={{ position: "absolute", right: -15, bottom: -28, fontSize: isMobile ? 90 : 170, color: "rgba(255,215,0,.1)" }} />
+      </section>
+
+      <section style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit,minmax(220px,1fr))", gap: 18 }}>
+        {cards.map((card, idx) => (
+          <div key={card.title} style={statCardStyle(idx)}>
+            <div style={{ width: 54, height: 54, borderRadius: 16, background: `linear-gradient(135deg, ${card.color}, #6b4e12)`, color: "#fff", display: "grid", placeItems: "center", fontSize: 24, boxShadow: `0 12px 25px ${card.color}55` }}>{card.icon}</div>
+            <span style={{ display: "block", marginTop: 16, fontSize: 12, color: "#776b5f", fontWeight: 800 }}>{card.title}</span>
+            <b style={{ display: "block", marginTop: 5, fontSize: 24, color: colors.deepDark }}>{loading ? "Loading..." : card.value}</b>
+          </div>
+        ))}
+      </section>
     </div>
-  </div>
-);
+  );
+};
 
-const menuStyle = (isActive, colors, isCollapsed) => ({
-  display: "flex", 
-  alignItems: "center", 
-  justifyContent: isCollapsed ? "center" : "space-between",
-  padding: "10px 14px", 
-  marginBottom: "6px", 
-  borderRadius: "10px", 
-  cursor: "pointer",
-  background: isActive 
-    ? `linear-gradient(90deg, ${colors.luxuryGold}22 0%, ${colors.goldDark}11 100%)`
-    : "transparent",
-  color: isActive ? "#ffffff" : "rgba(255,255,255,0.6)",
-  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-  borderLeft: isActive 
-    ? `3px solid ${colors.luxuryGold}`
-    : "3px solid transparent",
-  position: "relative",
-  fontWeight: isActive ? "700" : "500",
-  fontSize: "12px",
-  backdropFilter: "blur(10px)",
-  overflow: "hidden",
-  transform: "translateX(0)",
-  boxShadow: isActive 
-    ? "inset 0 0 15px rgba(255, 215, 0, 0.1), 0 2px 10px rgba(0,0,0,0.2)" 
-    : "none"
-});
+const overlayStyle = { position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", zIndex: 999, backdropFilter: "blur(4px)" };
 
-const pageContainerStyle = (colors) => ({
-  backgroundColor: colors.pureWhite, 
-  borderRadius: "20px", 
-  padding: "30px", 
-  minHeight: "80vh", 
-  boxShadow: "0 10px 50px rgba(0,0,0,0.1), 0 2px 15px rgba(255, 215, 0, 0.15)", 
-  border: `1px solid ${colors.glassBorder}`,
-  background: "white",
-  position: "relative",
-  overflow: "hidden"
-});
-
-const bannerStyle = (colors) => ({
-  background: `linear-gradient(135deg, ${colors.gradientStart} 0%, ${colors.gradientMid} 50%, ${colors.gradientEnd} 100%)`,
-  padding: '50px 40px', 
-  borderRadius: '20px', 
-  color: 'white', 
-  position: 'relative', 
-  marginBottom: '35px',
-  boxShadow: "0 15px 50px rgba(0,0,0,0.3), inset 0 0 80px rgba(255, 215, 0, 0.1)",
-  overflow: "hidden",
-  border: `2px solid ${colors.glassBorder}`
-});
-
-const iconBtnStyle = (colors) => ({ 
-  border: 'none', 
-  background: `linear-gradient(135deg, ${colors.softPink} 0%, #ffffff 100%)`, 
-  padding: "10px", 
-  borderRadius: "12px", 
-  cursor: 'pointer',
+const sidebarStyle = ({ collapsed, isMobile, mobileMenuOpen }) => ({
+  width: collapsed && !isMobile ? 76 : 265,
+  background: `linear-gradient(180deg, ${colors.gradientStart}, ${colors.gradientMid} 45%, ${colors.gradientEnd})`,
+  padding: "18px 10px",
+  transition: "all .35s ease",
   display: "flex",
+  flexDirection: "column",
+  position: isMobile ? "fixed" : "sticky",
+  top: 0,
+  height: "100vh",
+  boxShadow: "5px 0 30px rgba(0,0,0,.28)",
+  zIndex: isMobile ? 1000 : 100,
+  transform: isMobile && !mobileMenuOpen ? "translateX(-100%)" : "translateX(0)",
+  overflow: "hidden",
+  borderRight: `1px solid ${colors.glassBorder}`,
+});
+
+const logoBlockStyle = (collapsed, isMobile) => ({
+  textAlign: "center",
+  marginBottom: 18,
+  padding: collapsed && !isMobile ? "0 5px 16px" : "0 12px 16px",
+  borderBottom: `1px solid ${colors.glassBorder}`,
+});
+
+const menuStyle = (active, centered) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: centered ? "center" : "flex-start",
+  padding: "11px 14px",
+  marginBottom: 7,
+  borderRadius: 12,
+  cursor: "pointer",
+  background: active ? `linear-gradient(90deg, ${colors.luxuryGold}22, transparent)` : "transparent",
+  color: active ? "#fff" : "rgba(255,255,255,.68)",
+  borderLeft: active ? `3px solid ${colors.luxuryGold}` : "3px solid transparent",
+  boxShadow: active ? "inset 0 0 15px rgba(255,215,0,.1)" : "none",
+  transition: "all .25s ease",
+});
+
+const topbarStyle = (isMobile) => ({
+  height: isMobile ? 62 : 72,
+  background: "rgba(255,255,255,.9)",
+  display: "flex",
+  alignItems: "center",
+  padding: isMobile ? "0 14px" : "0 28px",
+  justifyContent: "space-between",
+  boxShadow: "0 4px 25px rgba(0,0,0,.08)",
+  zIndex: 90,
+  borderBottom: `1px solid ${colors.glassBorder}`,
+  position: "sticky",
+  top: 0,
+  backdropFilter: "blur(10px)",
+});
+
+const iconBtnStyle = {
+  border: "none",
+  background: "linear-gradient(135deg,#fff,#f4ead2)",
+  padding: 11,
+  borderRadius: 13,
+  cursor: "pointer",
+  display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
   color: colors.deepDark,
-  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-  boxShadow: "0 4px 15px rgba(0,0,0,0.1), inset 0 0 20px rgba(255, 255, 255, 0.8)",
-  outline: `2px solid ${colors.glassBorder}`,
-  transform: "scale(1)",
-  WebkitTapHighlightColor: "transparent"
+  boxShadow: "0 4px 15px rgba(0,0,0,.08)",
+  outline: `1px solid ${colors.glassBorder}`,
+};
+
+const avatarStyle = {
+  width: 45,
+  height: 45,
+  borderRadius: 14,
+  background: `linear-gradient(135deg, ${colors.luxuryGold}, ${colors.accentBrown})`,
+  display: "grid",
+  placeItems: "center",
+  color: "#fff",
+  boxShadow: `0 6px 20px ${colors.luxuryGold}55`,
+  fontSize: 20,
+};
+
+const pageContainerStyle = (isMobile) => ({
+  background: "#fff",
+  borderRadius: isMobile ? 16 : 22,
+  padding: isMobile ? 12 : 22,
+  minHeight: "80vh",
+  boxShadow: "0 10px 45px rgba(0,0,0,.08)",
+  border: `1px solid ${colors.glassBorder}`,
+  overflow: "hidden",
 });
 
-const avatarStyle = (colors) => ({ 
-  width: "45px", 
-  height: "45px", 
-  borderRadius: "14px", 
-  background: `linear-gradient(135deg, ${colors.luxuryGold} 0%, ${colors.accentBrown} 100%)`,
-  display: "flex", 
-  alignItems: "center", 
-  justifyContent: "center", 
-  color: "#fff",
-  boxShadow: `0 6px 20px ${colors.luxuryGold}66, 0 3px 10px ${colors.goldDark}44`,
-  fontSize: "20px",
+const dashboardHeroStyle = (isMobile) => ({
   position: "relative",
-  zIndex: 1
+  overflow: "hidden",
+  marginBottom: 25,
+  padding: isMobile ? 24 : 42,
+  borderRadius: 24,
+  background: `linear-gradient(135deg, ${colors.gradientStart}, ${colors.gradientMid}, ${colors.gradientEnd})`,
+  boxShadow: "0 15px 45px rgba(0,0,0,.22)",
+  border: `1px solid ${colors.glassBorder}`,
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: isMobile ? "flex-start" : "center",
+  gap: 16,
+  flexDirection: isMobile ? "column" : "row",
+});
+
+const statCardStyle = (idx) => ({
+  background: "#fff",
+  borderRadius: 20,
+  padding: 22,
+  boxShadow: "0 10px 32px rgba(0,0,0,.08)",
+  border: `1px solid ${colors.glassBorder}`,
+  animation: `scaleIn ${0.25 + idx * 0.04}s ease both`,
 });
 
 export default App;
