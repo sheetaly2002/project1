@@ -3,11 +3,14 @@ import axios from "axios";
 import BASE_URLS from "./Inventory Management/apiConfig";
 import {
   FaBars,
+  FaBook,
   FaBox,
   FaChartLine,
+  FaChartPie,
   FaCrown,
   FaFileInvoiceDollar,
   FaGem,
+  FaMoneyBillWave,
   FaPlusSquare,
   FaRecycle,
   FaRupeeSign,
@@ -15,6 +18,7 @@ import {
   FaTags,
   FaTimes,
   FaTools,
+  FaTruck,
   FaUserShield,
   FaUserTie,
   FaUsers,
@@ -26,14 +30,18 @@ import { GiThreeLeaves } from "react-icons/gi";
 import Login from "./Inventory Management/Login";
 import AllUsers from "./Inventory Management/UserManagement";
 import MasterSetup from "./Inventory Management/Category-Lists";
-// import RateMaster from "./Inventory Management/Ra";
+// import RateMaster from "./Inventory Management/RateMaster";
 import Products from "./Inventory Management/Products";
 import OpeningStock from "./Inventory Management/Opening_stock";
 import StockInventory from "./Inventory Management/stock";
 import Customers from "./Inventory Management/customers";
 import SalesBilling from "./Inventory Management/sales";
-import ProfitLoss from "./Inventory Management/Reports";
+import ProfitLoss from "./Inventory Management/ProfitLoss";
 import RepairingModule from "./Inventory Management/Repairing";
+import Cashbook from "./Inventory Management/cashbook";
+import Reports from "./Inventory Management/Reports";
+import SupplierMaster from "./Inventory Management/Suppliers";
+import PurchaseManagement from "./Inventory Management/purchase_lists";
 
 const colors = {
   deepDark: "#0f0f1a",
@@ -67,6 +75,10 @@ const App = () => {
     todaySales: 0,
     totalSales: 0,
     totalProfit: 0,
+    cashIn: 0,
+    cashOut: 0,
+    cashBalance: 0,
+    repairIncome: 0,
     totalCustomers: 0,
     totalProducts: 0,
     totalStockItems: 0,
@@ -127,14 +139,17 @@ const App = () => {
   const menuItems = [
     { id: "dashboard", name: "Dashboard", icon: <FaChartLine /> },
     { id: "master", name: "Master Setup", icon: <FaTags /> },
-    { id: "products", name: "Rate Master", icon: <FaRupeeSign /> },
-    // { id: "products", name: "Product Master", icon: <FaBox /> },
+    { id: "products", name: "Product Master", icon: <FaBox /> },
     { id: "opening_stock", name: "Opening Stock", icon: <FaPlusSquare /> },
     { id: "stock", name: "Stock Inventory", icon: <FaWarehouse /> },
     { id: "customers", name: "Customers", icon: <FaUsers /> },
     { id: "sales", name: "Sales Billing", icon: <FaFileInvoiceDollar /> },
     { id: "profit_loss", name: "Profit / Loss", icon: <FaGem /> },
+    { id: "cashbook", name: "Cashbook", icon: <FaMoneyBillWave /> },
     { id: "repairing", name: "Repairing", icon: <FaTools /> },
+    { id: "reports", name: "Reports", icon: <FaChartPie /> },
+    { id: "suppliers", name: "Suppliers", icon: <FaUserTie /> },
+    { id: "purchase", name: "Purchase", icon: <FaTruck /> },
     ...(user?.role === "admin"
       ? [{ id: "AllUsers", name: "Manage Users", icon: <FaUserShield /> }]
       : []),
@@ -165,18 +180,22 @@ const App = () => {
         />
       );
     }
+
     return (
       <div style={pageContainerStyle(isMobile)}>
         {activePage === "AllUsers" && <AllUsers />}
         {activePage === "master" && <MasterSetup />}
-        {/* {activePage === "rate" && <RateMaster />} */}
         {activePage === "products" && <Products />}
         {activePage === "opening_stock" && <OpeningStock />}
         {activePage === "stock" && <StockInventory />}
         {activePage === "customers" && <Customers />}
         {activePage === "sales" && <SalesBilling />}
         {activePage === "profit_loss" && <ProfitLoss />}
+        {activePage === "cashbook" && <Cashbook />}
         {activePage === "repairing" && <RepairingModule />}
+        {activePage === "reports" && <Reports />}
+        {activePage === "suppliers" && <SupplierMaster />}
+        {activePage === "purchase" && <PurchaseManagement />}
       </div>
     );
   };
@@ -248,6 +267,9 @@ const Dashboard = ({ user, loading, data, refresh, isMobile }) => {
     { title: "Today Sales", value: `₹${formatMoney(data.todaySales)}`, icon: <FaFileInvoiceDollar />, color: "#ffd700" },
     { title: "Total Sales", value: `₹${formatMoney(data.totalSales)}`, icon: <FaChartLine />, color: "#f6c343" },
     { title: "Profit / Loss", value: `₹${formatMoney(data.totalProfit)}`, icon: <FaGem />, color: Number(data.totalProfit) >= 0 ? "#16a34a" : "#dc2626" },
+    { title: "Cash In", value: `₹${formatMoney(data.cashIn)}`, icon: <FaMoneyBillWave />, color: "#10b981" },
+    { title: "Cash Out", value: `₹${formatMoney(data.cashOut)}`, icon: <FaBook />, color: "#ef4444" },
+    { title: "Cash Balance", value: `₹${formatMoney(data.cashBalance)}`, icon: <FaRupeeSign />, color: "#0ea5e9" },
     { title: "Stock Value", value: `₹${formatMoney(data.stockValue)}`, icon: <FaWarehouse />, color: "#b8860b" },
     { title: "Stock Weight", value: `${Number(data.totalStockWeight || 0).toFixed(3)} g`, icon: <FaWeightHanging />, color: "#cd7f32" },
     { title: "Available Items", value: data.availableItems || 0, icon: <FaBox />, color: "#6366f1" },
@@ -255,6 +277,7 @@ const Dashboard = ({ user, loading, data, refresh, isMobile }) => {
     { title: "Customers", value: data.totalCustomers || 0, icon: <FaUsers />, color: "#ec4899" },
     { title: "Products", value: data.totalProducts || 0, icon: <FaTags />, color: "#a855f7" },
     { title: "Pending Repairs", value: data.pendingRepairs || 0, icon: <FaTools />, color: "#f97316" },
+    { title: "Repair Revenue", value: `₹${formatMoney(data.repairIncome)}`, icon: <FaGem />, color: "#f59e0b" },
   ];
 
   return (
@@ -263,7 +286,7 @@ const Dashboard = ({ user, loading, data, refresh, isMobile }) => {
         <div>
           <p style={{ margin: 0, color: colors.luxuryGold, fontWeight: 900, letterSpacing: 3 }}>WELCOME BACK</p>
           <h1 style={{ margin: "10px 0", color: "#fff", fontSize: isMobile ? 28 : 42 }}>{user?.full_name}</h1>
-          <p style={{ margin: 0, color: "rgba(255,255,255,.8)" }}>Completed modules dashboard: stock, sales, profit, customers and repairing.</p>
+          <p style={{ margin: 0, color: "rgba(255,255,255,.8)" }}>Premium jewellery management dashboard: sales, stock, cashbook, profit and repairs.</p>
         </div>
         <button onClick={refresh} style={{ ...iconBtnStyle, width: "auto", padding: "12px 18px", gap: 8 }}>
           <FaRecycle className={loading ? "spin" : ""} /> Refresh
