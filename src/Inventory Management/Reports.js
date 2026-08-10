@@ -1,174 +1,102 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import {
-  FaArrowDown, FaArrowUp, FaBalanceScale, FaBoxOpen, FaCalendarAlt,
-  FaChartLine, FaChevronLeft, FaChevronRight, FaCoins, FaDownload,
-  FaFilter, FaGem, FaRecycle, FaRupeeSign, FaSearch, FaSpinner,
-  FaWeightHanging
-} from "react-icons/fa";
+import { FaChartLine, FaDownload, FaFilter, FaPrint, FaRecycle, FaRupeeSign, FaSearch, FaSpinner, FaWarehouse, FaTools, FaWallet } from "react-icons/fa";
 import BASE_URL from "./apiConfig";
-import "./Profit.css";
+import "./Reports.css";
 
-const API = `${BASE_URL}/profit_loss_api.php`;
+const API = `${BASE_URL}/reports_api.php`;
 const today = new Date().toISOString().slice(0, 10);
 const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10);
 const money = (v) => Number(v || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const wt = (v) => Number(v || 0).toFixed(3);
 
-export default function ProfitLoss() {
-  const [metals, setMetals] = useState([]);
-  const [filters, setFilters] = useState({ from: monthStart, to: today, metal_id: "all", search: "" });
-  const [summary, setSummary] = useState({ sold: {}, available: {} });
-  const [daily, setDaily] = useState([]);
-  const [metalSummary, setMetalSummary] = useState([]);
-  const [soldRows, setSoldRows] = useState([]);
-  const [stockRows, setStockRows] = useState([]);
-  const [soldPage, setSoldPage] = useState(1);
-  const [stockPage, setStockPage] = useState(1);
-  const [soldPages, setSoldPages] = useState(1);
-  const [stockPages, setStockPages] = useState(1);
-  const [soldTotal, setSoldTotal] = useState(0);
-  const [stockTotal, setStockTotal] = useState(0);
-  const [activeTab, setActiveTab] = useState("sold");
+export default function Reports() {
+  const [tab, setTab] = useState("sales");
+  const [from, setFrom] = useState(monthStart);
+  const [to, setTo] = useState(today);
+  const [search, setSearch] = useState("");
+  const [summary, setSummary] = useState({});
+  const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
-  const limit = 10;
+  const [page, setPage] = useState(1);
+  const perPage = 12;
 
-  const loadMasters = useCallback(async () => {
+  const tabs = [
+    ["sales", "Sales Report"],
+    ["stock", "Stock Report"],
+    ["profit", "Profit/Loss"],
+    ["cashbook", "Cashbook"],
+    ["repair", "Repairing"],
+  ];
+
+  const loadSummary = async () => {
     try {
-      const res = await axios.get(`${API}?action=masters`);
-      if (res.data.status === "success") setMetals(res.data.metals || []);
+      const res = await axios.get(`${API}?action=summary&from=${from}&to=${to}`);
+      setSummary(res.data.summary || {});
     } catch {}
-  }, []);
+  };
 
-  const query = useCallback((action, page = 1) => {
-    const p = new URLSearchParams({ action, from: filters.from, to: filters.to, metal_id: filters.metal_id, search: filters.search, page, limit });
-    return `${API}?${p.toString()}`;
-  }, [filters]);
-
-  const loadAll = useCallback(async () => {
+  const loadRows = async () => {
     setLoading(true);
     try {
-      const [sum, sold, stock] = await Promise.all([
-        axios.get(query("summary", 1)),
-        axios.get(query("sold_list", soldPage)),
-        axios.get(query("available_stock", stockPage)),
-      ]);
-      if (sum.data.status === "success") {
-        setSummary(sum.data.summary || { sold: {}, available: {} });
-        setDaily(sum.data.daily || []);
-        setMetalSummary(sum.data.metal || []);
-      }
-      if (sold.data.status === "success") {
-        setSoldRows(sold.data.data || []);
-        setSoldPages(sold.data.pagination?.pages || 1);
-        setSoldTotal(sold.data.pagination?.total || 0);
-      }
-      if (stock.data.status === "success") {
-        setStockRows(stock.data.data || []);
-        setStockPages(stock.data.pagination?.pages || 1);
-        setStockTotal(stock.data.pagination?.total || 0);
-      }
+      const res = await axios.get(`${API}?action=${tab}&from=${from}&to=${to}&search=${encodeURIComponent(search)}`);
+      setRows(res.data.data || []);
+      setPage(1);
+    } catch {
+      setRows([]);
     } finally {
       setLoading(false);
     }
-  }, [query, soldPage, stockPage]);
-
-  useEffect(() => { loadMasters(); }, [loadMasters]);
-  useEffect(() => { loadAll(); }, [loadAll]);
-
-  const sold = summary.sold || {};
-  const available = summary.available || {};
-  const profit = Number(sold.gross_profit || 0);
-  const profitClass = profit >= 0 ? "profit" : "loss";
-
-  const updateFilter = (key, value) => {
-    setFilters((p) => ({ ...p, [key]: value }));
-    setSoldPage(1);
-    setStockPage(1);
   };
 
-  const exportCsv = () => {
-    const rows = activeTab === "sold" ? soldRows : stockRows;
-    const headers = activeTab === "sold"
-      ? ["Bill", "Date", "Barcode", "Product", "Customer", "Sale", "Cost", "Profit"]
-      : ["Barcode", "Product", "Metal", "Weight", "Rate", "Value"];
-    const body = rows.map((r) => activeTab === "sold"
-      ? [r.bill_no, r.sale_date, r.barcode_no, r.product_name, r.customer_name, r.sale_amount, r.cost_amount, r.profit_amount]
-      : [r.barcode_no, r.product_name, r.metal_name, r.remaining_weight, r.rate_per_gram, r.total_amount]
-    );
-    const csv = [headers, ...body].map((a) => a.map((x) => `"${String(x ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  useEffect(() => { loadSummary(); }, [from, to]);
+  useEffect(() => { loadRows(); }, [tab, from, to]);
+
+  const current = useMemo(() => rows.slice((page - 1) * perPage, page * perPage), [rows, page]);
+  const pages = Math.ceil(rows.length / perPage) || 1;
+
+  const exportCSV = () => {
+    if (!rows.length) return;
+    const headers = Object.keys(rows[0]);
+    const csv = [headers.join(","), ...rows.map(r => headers.map(h => `"${String(r[h] ?? "").replaceAll('"','""')}"`).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = `profit-loss-${activeTab}.csv`;
-    a.click();
+    a.href = url; a.download = `${tab}_report_${from}_to_${to}.csv`; a.click();
     URL.revokeObjectURL(url);
   };
 
-  const maxDaily = Math.max(...daily.map((d) => Math.abs(Number(d.profit || 0))), 1);
+  const printReport = () => {
+    const table = document.querySelector(".rp-table-wrap")?.innerHTML || "";
+    const w = window.open("", "_blank");
+    w.document.write(`<html><head><title>${tab} report</title><style>body{font-family:Arial;padding:20px}h2{color:#6b3d0b}table{width:100%;border-collapse:collapse}th{background:#111;color:#fff}th,td{border:1px solid #ddd;padding:8px;font-size:12px}</style></head><body><h2>Shreeji Jewellers - ${tab.toUpperCase()} Report</h2><p>${from} to ${to}</p>${table}<script>window.onload=()=>window.print()</script></body></html>`);
+    w.document.close();
+  };
 
-  return (
-    <div className="pl-page">
-      <div className="pl-container">
-        <header className="pl-hero">
-          <div className="pl-hero-icon"><FaChartLine /></div>
-          <div>
-            <p>Jewellery Analytics</p>
-            <h1>Profit / Loss & Stock Value</h1>
-            <span>Barcode-wise sale profit, remaining stock value and metal-wise performance.</span>
-          </div>
-          <button onClick={loadAll}><FaRecycle /> Refresh</button>
-        </header>
+  const renderTable = () => {
+    if (loading) return <div className="rp-loader"><FaSpinner className="spin" /> Loading report...</div>;
+    if (!current.length) return <div className="rp-empty">No records found</div>;
+    if (tab === "sales") return <table><thead><tr><th>Bill</th><th>Date</th><th>Customer</th><th>Mobile</th><th>Total</th><th>Paid</th><th>Due</th><th>Mode</th></tr></thead><tbody>{current.map(r=><tr key={r.sale_id}><td>{r.bill_no}</td><td>{r.sale_date || r.created_at}</td><td>{r.customer_name}</td><td>{r.mobile}</td><td>₹{money(r.grand_total || r.total_amount || r.final_amount)}</td><td>₹{money(r.paid_amount)}</td><td>₹{money(r.due_amount)}</td><td>{r.payment_mode}</td></tr>)}</tbody></table>;
+    if (tab === "stock") return <table><thead><tr><th>Barcode</th><th>Product</th><th>Metal</th><th>Type</th><th>Net Wt</th><th>Rate</th><th>Total</th><th>Status</th></tr></thead><tbody>{current.map(r=><tr key={r.stock_id}><td>{r.barcode_no}</td><td>{r.product_name}</td><td>{r.metal_name}</td><td>{r.item_type}</td><td>{wt(r.net_weight)}g</td><td>₹{money(r.rate_per_gram)}</td><td>₹{money(r.total_amount)}</td><td><b className={r.stock_status === "AVAILABLE" ? "green" : "red"}>{r.stock_status}</b></td></tr>)}</tbody></table>;
+    if (tab === "profit") return <table><thead><tr><th>Bill</th><th>Date</th><th>Barcode</th><th>Product</th><th>Metal</th><th>Cost</th><th>Sale</th><th>Profit/Loss</th></tr></thead><tbody>{current.map((r,i)=><tr key={i}><td>{r.bill_no}</td><td>{r.sale_date}</td><td>{r.barcode_no}</td><td>{r.product_name}</td><td>{r.metal_name}</td><td>₹{money(r.cost_amount)}</td><td>₹{money(r.sale_amount)}</td><td className={Number(r.profit_amount)>=0?"green":"red"}>₹{money(r.profit_amount)}</td></tr>)}</tbody></table>;
+    if (tab === "cashbook") return <table><thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Mode</th><th>Notes</th></tr></thead><tbody>{current.map(r=><tr key={r.id}><td>{r.entry_date}</td><td><b className={r.entry_type === "income" ? "green" : "red"}>{r.entry_type}</b></td><td>{r.category}</td><td>₹{money(r.amount)}</td><td>{r.payment_mode}</td><td>{r.notes}</td></tr>)}</tbody></table>;
+    return <table><thead><tr><th>Repair No</th><th>Customer</th><th>Mobile</th><th>Item</th><th>Receive</th><th>Expected</th><th>Status</th><th>Due</th></tr></thead><tbody>{current.map(r=><tr key={r.id}><td>{r.repair_no}</td><td>{r.customer_name}</td><td>{r.mobile}</td><td>{r.item_name}</td><td>{r.receive_date}</td><td>{r.expected_date}</td><td>{r.status}</td><td>₹{money(r.due_amount)}</td></tr>)}</tbody></table>;
+  };
 
-        <section className="pl-filters">
-          <label><FaCalendarAlt /> From<input type="date" value={filters.from} onChange={(e) => updateFilter("from", e.target.value)} /></label>
-          <label><FaCalendarAlt /> To<input type="date" value={filters.to} onChange={(e) => updateFilter("to", e.target.value)} /></label>
-          <label><FaGem /> Metal<select value={filters.metal_id} onChange={(e) => updateFilter("metal_id", e.target.value)}><option value="all">All Metals</option>{metals.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
-          <label className="search"><FaSearch /><input value={filters.search} onChange={(e) => updateFilter("search", e.target.value)} placeholder="Search bill, barcode, product, customer" /></label>
-          <button className="export" onClick={exportCsv}><FaDownload /> Export</button>
-        </section>
-
-        <section className="pl-stats">
-          <div className="stat"><FaRupeeSign /><span>Sales Value</span><b>₹{money(sold.sales_value)}</b><small>{sold.sold_items || 0} sold items</small></div>
-          <div className="stat"><FaCoins /><span>Stock Cost Sold</span><b>₹{money(sold.cost_value)}</b><small>Exact barcode cost</small></div>
-          <div className={`stat ${profitClass}`}>{profit >= 0 ? <FaArrowUp /> : <FaArrowDown />}<span>{profit >= 0 ? "Gross Profit" : "Gross Loss"}</span><b>₹{money(Math.abs(profit))}</b><small>{money(sold.profit_percent)}%</small></div>
-          <div className="stat"><FaBoxOpen /><span>Remaining Stock Value</span><b>₹{money(available.available_value)}</b><small>{available.available_items || 0} items • {wt(available.available_weight)}g</small></div>
-        </section>
-
-        <section className="pl-grid">
-          <div className="pl-card chart-card">
-            <div className="card-head"><h2>Daily Profit Trend</h2><span>{filters.from} to {filters.to}</span></div>
-            {daily.length ? <div className="bars">{daily.map((d) => {
-              const val = Number(d.profit || 0);
-              const h = Math.max(8, Math.abs(val) / maxDaily * 120);
-              return <div className="bar-item" key={d.sale_date}><div className={val >= 0 ? "bar up" : "bar down"} style={{ height: `${h}px` }} title={`₹${money(val)}`} /><small>{d.sale_date.slice(5)}</small></div>;
-            })}</div> : <div className="empty">No sales in selected period</div>}
-          </div>
-
-          <div className="pl-card metal-card">
-            <div className="card-head"><h2>Metal-wise Profit</h2><FaBalanceScale /></div>
-            {metalSummary.length ? metalSummary.map((m) => <div className="metal-row" key={m.metal_name}><div><b>{m.metal_name}</b><small>{m.sold_items} items</small></div><span className={Number(m.profit) >= 0 ? "good" : "bad"}>₹{money(m.profit)}</span></div>) : <div className="empty">No metal summary</div>}
-          </div>
-        </section>
-
-        <section className="pl-card list-card">
-          <div className="tab-head">
-            <div className="tabs"><button className={activeTab === "sold" ? "active" : ""} onClick={() => setActiveTab("sold")}>Sold Profit/Loss</button><button className={activeTab === "stock" ? "active" : ""} onClick={() => setActiveTab("stock")}>Remaining Stock</button></div>
-            <span>{activeTab === "sold" ? soldTotal : stockTotal} records</span>
-          </div>
-
-          {activeTab === "sold" ? (
-            <div className="table-wrap">{loading ? <div className="loader"><FaSpinner className="spin" /> Loading...</div> : <table><thead><tr><th>#</th><th>Bill / Date</th><th>Barcode</th><th>Product</th><th>Customer</th><th>Sale</th><th>Cost</th><th>Profit/Loss</th></tr></thead><tbody>{soldRows.length ? soldRows.map((r, idx) => <tr key={r.sale_item_id}><td>{(soldPage-1)*limit+idx+1}</td><td><b>{r.bill_no}</b><small>{r.sale_date}</small></td><td>{r.barcode_no}</td><td><b>{r.product_name}</b><small>{r.metal_name || "-"} • {wt(r.net_weight)}g</small></td><td>{r.customer_name}</td><td>₹{money(r.sale_amount)}<small>Rate ₹{money(r.sale_rate)}</small></td><td>₹{money(r.cost_amount)}<small>Stock ₹{money(r.stock_rate)}</small></td><td><b className={Number(r.profit_amount) >= 0 ? "good" : "bad"}>₹{money(r.profit_amount)}</b><small>{money(r.profit_percent)}%</small></td></tr>) : <tr><td colSpan="8" className="empty">No sold records</td></tr>}</tbody></table>}</div>
-          ) : (
-            <div className="table-wrap">{loading ? <div className="loader"><FaSpinner className="spin" /> Loading...</div> : <table><thead><tr><th>#</th><th>Barcode</th><th>Product</th><th>Metal</th><th>Remaining Wt</th><th>Rate</th><th>Making</th><th>Stock Value</th></tr></thead><tbody>{stockRows.length ? stockRows.map((r, idx) => <tr key={r.stock_id}><td>{(stockPage-1)*limit+idx+1}</td><td>{r.barcode_no}</td><td><b>{r.product_name}</b><small>{r.batch_type}</small></td><td>{r.metal_name || "-"}</td><td>{wt(r.remaining_weight)}g</td><td>₹{money(r.rate_per_gram)}</td><td>₹{money(r.making_charge)}</td><td><b>₹{money(r.total_amount)}</b></td></tr>) : <tr><td colSpan="8" className="empty">No available stock</td></tr>}</tbody></table>}</div>
-          )}
-
-          <div className="pager">
-            {activeTab === "sold" ? <><button disabled={soldPage <= 1} onClick={() => setSoldPage((p) => p - 1)}><FaChevronLeft /></button><b>Page {soldPage} / {soldPages || 1}</b><button disabled={soldPage >= soldPages} onClick={() => setSoldPage((p) => p + 1)}><FaChevronRight /></button></> : <><button disabled={stockPage <= 1} onClick={() => setStockPage((p) => p - 1)}><FaChevronLeft /></button><b>Page {stockPage} / {stockPages || 1}</b><button disabled={stockPage >= stockPages} onClick={() => setStockPage((p) => p + 1)}><FaChevronRight /></button></>}
-          </div>
-        </section>
-      </div>
-    </div>
-  );
+  return <div className="rp-page">
+    <header className="rp-hero"><div><p>Business Reports</p><h1>Reports & Analytics</h1><span>Sales, stock, profit/loss, cashbook and repairing report in one panel.</span></div><button onClick={()=>{loadSummary();loadRows();}}><FaRecycle /> Refresh</button></header>
+    <section className="rp-cards">
+      <div><FaRupeeSign/><span>Sales</span><b>₹{money(summary.sales_amount)}</b></div>
+      <div><FaChartLine/><span>Profit/Loss</span><b className={Number(summary.profit)>=0?"green":"red"}>₹{money(summary.profit)}</b></div>
+      <div><FaWarehouse/><span>Stock Value</span><b>₹{money(summary.stock_value)}</b></div>
+      <div><FaWallet/><span>Cash Balance</span><b>₹{money(Number(summary.cash_in||0)-Number(summary.cash_out||0))}</b></div>
+      <div><FaTools/><span>Pending Repairs</span><b>{summary.repair_pending || 0}</b></div>
+    </section>
+    <section className="rp-panel">
+      <div className="rp-tabs">{tabs.map(t=><button key={t[0]} className={tab===t[0]?"active":""} onClick={()=>setTab(t[0])}>{t[1]}</button>)}</div>
+      <div className="rp-toolbar"><label>From<input type="date" value={from} onChange={e=>setFrom(e.target.value)} /></label><label>To<input type="date" value={to} onChange={e=>setTo(e.target.value)} /></label><div className="rp-search"><FaSearch/><input value={search} onChange={e=>setSearch(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')loadRows();}} placeholder="Search..." /></div><button onClick={loadRows}><FaFilter/> Apply</button><button onClick={exportCSV}><FaDownload/> CSV</button><button onClick={printReport}><FaPrint/> Print</button></div>
+      <div className="rp-table-wrap">{renderTable()}</div>
+      <div className="rp-pagination"><span>Total {rows.length}</span><button disabled={page===1} onClick={()=>setPage(p=>p-1)}>Prev</button><b>Page {page}/{pages}</b><button disabled={page===pages} onClick={()=>setPage(p=>p+1)}>Next</button></div>
+    </section>
+  </div>;
 }

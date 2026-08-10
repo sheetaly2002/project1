@@ -163,7 +163,7 @@ export default function StockInventory() {
         <header className="si-hero">
           <div className="si-hero-icon"><FaBoxOpen /></div>
           <div>
-            <h1>Stock Inventoryooo</h1>
+            <h1>Stock Inventory</h1>
             <p>Barcode wise jewellery stock, weight, value and availability control</p>
           </div>
           <button className="si-refresh" onClick={loadStock}><FaRecycle /> Refresh</button>
@@ -194,12 +194,12 @@ export default function StockInventory() {
           <div className="si-table-wrap">
             {loading ? <div className="si-loader"><FaSpinner className="spin" /> Loading stock...</div> : (
               <table className="si-table">
-                <thead><tr><th>#</th><th>Barcode</th><th>Product</th><th>Metal / Type</th><th>Weight</th><th>Rate</th><th>Total</th><th>Status</th><th>Action</th></tr></thead>
+                <thead><tr><th>#</th><th>Product</th><th>Metal / Type</th><th>Weight</th><th>Rate</th><th>Total</th><th>Status</th><th>Action</th></tr></thead>
                 <tbody>
                   {rows.length ? rows.map((item, idx) => (
                     <tr key={item.stock_id}>
                       <td>{(page - 1) * limit + idx + 1}</td>
-                      <td><button className="barcode-btn" onClick={() => printBarcode(item)}><FaBarcode /> {item.barcode_no}</button><small>{item.batch_type}</small></td>
+                      {/* <td><button className="barcode-btn" onClick={() => printBarcode(item)}><FaBarcode /> {item.barcode_no}</button><small>{item.batch_type}</small></td> */}
                       <td><b>{item.product_name || "-"}</b><small>HSN {item.product_hsn || item.hsn_code || "-"}</small></td>
                       <td><b>{item.metal_name || "-"}</b><small>{item.item_type_name || "-"}</small></td>
                       <td><b>{weight(item.net_weight)}g</b><small>Remain {weight(item.remaining_weight)}g</small></td>

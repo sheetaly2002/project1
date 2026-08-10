@@ -3,18 +3,20 @@ import axios from "axios";
 import {
   FaBarcode, FaBoxOpen, FaChevronLeft, FaChevronRight, FaCrown, FaPlus,
   FaPrint, FaRupeeSign, FaSearch, FaSpinner, FaTimes, FaTrash, FaGem,
-  FaCheckCircle, FaExclamationCircle
+  FaCheckCircle, FaExclamationCircle, FaEdit
 } from "react-icons/fa";
 import BASE_URL from "./apiConfig";
 import "./OpeningStock.css";
 
 const API = `${BASE_URL}/opening_stock.php`;
-const today = new Date().toISOString().slice(0, 10);
+const STOCK_API = `${BASE_URL}/stock_inventory_api.php`;const today = new Date().toISOString().slice(0, 10);
 const emptyCommon = { entry_date: today, metal_id: "", sub_cat_id: "", product_id: "", purity: "", making_type: "amount" };
 const emptyPiece = { net_weight: "", rate_per_gram: "", making_value: "0" };
 
 export default function OpeningStock() {
   const [metals, setMetals] = useState([]);
+  const [editMode, setEditMode] = useState(false);
+const [editingItem, setEditingItem] = useState(null);
   const [subs, setSubs] = useState([]);
   const [products, setProducts] = useState([]);
   const [purities, setPurities] = useState([]);
@@ -68,10 +70,13 @@ export default function OpeningStock() {
     [subs, common.metal_id]
   );
 
-  const filteredProducts = useMemo(
-    () => products.filter(p => String(p.sub_cat_id) === String(common.sub_cat_id)),
-    [products, common.sub_cat_id]
-  );
+ const filteredProducts = useMemo(
+  () =>
+    products.filter(
+      p => String(p.sub_category_id) === String(common.sub_cat_id)
+    ),
+  [products, common.sub_cat_id]
+);
 
   const filteredPurities = useMemo(
     () => purities.filter(p => String(p.main_cat_id) === String(common.metal_id)),
@@ -98,11 +103,57 @@ export default function OpeningStock() {
     if (common.metal_id) fetchRate(common.metal_id, common.purity);
   }, [common.metal_id, common.purity, fetchRate]);
 
-  const reset = () => {
-    setCommon(emptyCommon);
-    setPieces([{ ...emptyPiece }]);
-    setShowForm(false);
-  };
+ const reset = () => {
+  setCommon({
+    entry_date: today,
+    metal_id: "",
+    sub_cat_id: "",
+    product_id: "",
+    purity: "",
+    making_type: "amount"
+  });
+
+  setPieces([{ ...emptyPiece }]);
+  setEditMode(false);
+  setEditingItem(null);
+  setShowForm(false);
+};
+
+const edit = (item) => {
+  if (
+    Number(item.remaining_qty || 0) <= 0 ||
+    Number(item.remaining_weight || 0) <= 0
+  ) {
+    notify("error", "Sold item ko edit nahi kar sakte");
+    return;
+  }
+
+  const metalId = String(item.main_cat_id || "");
+  const subId = String(item.sub_cat_id || "");
+  const productId = String(item.product_id || "");
+
+  setEditingItem(item);
+  setEditMode(true);
+
+  setCommon({
+    entry_date: item.batch_date || today,
+    metal_id: metalId,
+    sub_cat_id: subId,
+    product_id: productId,
+    purity: item.product_purity || "",
+    making_type: "amount"
+  });
+
+  setPieces([
+    {
+      net_weight: String(item.net_weight || ""),
+      rate_per_gram: String(item.rate_per_gram || ""),
+      making_value: String(item.making_charge || "0")
+    }
+  ]);
+
+  setShowForm(true);
+};
 
   const updateCommon = (patch) => setCommon(prev => ({ ...prev, ...patch }));
 
@@ -132,28 +183,127 @@ export default function OpeningStock() {
     return { making, total: (net * rate) + making };
   };
 
-  const save = async (e) => {
-    e.preventDefault();
-    if (!common.metal_id) return notify("error", "Metal select karo");
-    if (!common.sub_cat_id) return notify("error", "Item Type select karo");
-    if (!common.product_id) return notify("error", "Product select karo");
-    if (pieces.some(p => Number(p.net_weight) <= 0)) return notify("error", "Har piece ka Net Weight daalo");
-    if (pieces.some(p => Number(p.rate_per_gram) <= 0)) return notify("error", "Rate per gram required");
+const save = async (e) => {
+  e.preventDefault();
 
-    setSaving(true);
-    try {
-      const res = await axios.post(API, { ...common, items: pieces });
-      if (res.data.status === "success") {
-        notify("success", res.data.message || "Opening stock saved");
+  if (!common.metal_id) {
+    return notify("error", "Metal select karo");
+  }
+
+  if (!common.sub_cat_id) {
+    return notify("error", "Item Type select karo");
+  }
+
+  if (!common.product_id) {
+    return notify("error", "Product select karo");
+  }
+
+  if (pieces.some(p => Number(p.net_weight) <= 0)) {
+    return notify("error", "Har piece ka Net Weight daalo");
+  }
+
+  if (pieces.some(p => Number(p.rate_per_gram) <= 0)) {
+    return notify("error", "Rate per gram required");
+  }
+
+  setSaving(true);
+
+  try {
+
+    /* =========================================
+       EDIT EXISTING OPENING STOCK
+    ========================================= */
+
+    if (editMode && editingItem) {
+
+      const piece = pieces[0];
+
+      const payload = {
+  stock_id: Number(editingItem.stock_id),
+
+  net_weight: Number(piece.net_weight),
+  rate_per_gram: Number(piece.rate_per_gram),
+  making_charge: Number(piece.making_value || 0),
+
+  main_cat_id: Number(common.metal_id),
+  sub_cat_id: Number(common.sub_cat_id),
+  product_id: Number(common.product_id),
+
+  purity: common.purity || "",
+  making_type: common.making_type || "amount"
+};
+
+      const res = await axios.post(
+        `${STOCK_API}?action=update`,
+        payload
+      );
+
+      if (res.data?.status === "success") {
+
+        notify(
+          "success",
+          "Opening Stock updated successfully"
+        );
+
         reset();
-        loadAll();
-      } else notify("error", res.data.message || "Save failed");
-    } catch (err) {
-      notify("error", err.response?.data?.message || "Save failed");
-    } finally {
-      setSaving(false);
+
+        await loadAll();
+
+      } else {
+
+        notify(
+          "error",
+          res.data?.message || "Update failed"
+        );
+      }
+
+      return;
     }
-  };
+
+
+    /* =========================================
+       ADD NEW OPENING STOCK
+    ========================================= */
+
+    const res = await axios.post(API, {
+      ...common,
+      items: pieces
+    });
+
+    if (res.data?.status === "success") {
+
+      notify(
+        "success",
+        res.data.message || "Opening stock saved"
+      );
+
+      reset();
+
+      await loadAll();
+
+    } else {
+
+      notify(
+        "error",
+        res.data?.message || "Save failed"
+      );
+    }
+
+  } catch (err) {
+
+    console.error("Opening Stock Save Error:", err);
+
+    notify(
+      "error",
+      err.response?.data?.message ||
+      "Save failed"
+    );
+
+  } finally {
+
+    setSaving(false);
+  }
+};
 
   const del = async (item) => {
     if (!window.confirm("Delete this stock item?")) return;
@@ -320,18 +470,95 @@ const toggleSelectAllCurrent = (checked) => {
                 <thead><tr><th><input type="checkbox" checked={current.length > 0 && current.every(i => selectedIds.includes(String(i.stock_id)))} onChange={e => toggleSelectAllCurrent(e.target.checked)} /></th><th>#</th><th>Barcode</th><th>Product</th><th>Metal</th><th>Net Wt</th><th>Rate</th><th>Making</th><th>Total</th><th>Action</th></tr></thead>
                 <tbody>
                   {current.length ? current.map((i, idx) => (
-                    <tr key={i.stock_id} className={selectedIds.includes(String(i.stock_id)) ? "selected-row" : ""}>
-                      <td><input type="checkbox" checked={selectedIds.includes(String(i.stock_id))} onChange={() => toggleSelect(i.stock_id)} /></td>
-                      <td>{(page - 1) * perPage + idx + 1}</td>
-                      <td><b className="code"><FaBarcode /> {i.barcode_no}</b></td>
-                      <td><strong>{i.product_name}</strong><small>{i.item_type || "-"}</small></td>
-                      <td>{i.metal_name || "-"}</td>
-                      <td>{Number(i.net_weight || 0).toFixed(3)}g</td>
-                      <td>₹{money(i.rate_per_gram)}</td>
-                      <td>₹{money(i.making_charge)}</td>
-                      <td><b>₹{money(i.total_amount)}</b></td>
-                      <td><div className="os-actions"><button onClick={() => handlePrintTags(i)}><FaPrint /></button><button className="danger" onClick={() => del(i)}><FaTrash /></button></div></td>
-                    </tr>
+                    <tr
+  key={i.stock_id}
+  className={
+    selectedIds.includes(String(i.stock_id))
+      ? "selected-row"
+      : ""
+  }
+>
+  <td>
+    <input
+      type="checkbox"
+      checked={selectedIds.includes(String(i.stock_id))}
+      onChange={() => toggleSelect(i.stock_id)}
+    />
+  </td>
+
+  <td>
+    {(page - 1) * perPage + idx + 1}
+  </td>
+
+  <td>
+    <b className="code">
+      <FaBarcode /> {i.barcode_no}
+    </b>
+  </td>
+
+  <td>
+    <strong>{i.product_name}</strong>
+    <small>{i.item_type || "-"}</small>
+  </td>
+
+  <td>
+    {i.metal_name || "-"}
+  </td>
+
+  <td>
+    {Number(i.net_weight || 0).toFixed(3)}g
+  </td>
+
+  <td>
+    ₹{money(i.rate_per_gram)}
+  </td>
+
+  <td>
+    ₹{money(i.making_charge)}
+  </td>
+
+  <td>
+    <b>₹{money(i.total_amount)}</b>
+  </td>
+
+  <td>
+    <div className="os-actions">
+
+      {/* PRINT */}
+      <button
+        title="Print Barcode"
+        onClick={() => handlePrintTags(i)}
+      >
+        <FaPrint />
+      </button>
+
+      {/* EDIT - only available stock */}
+      {Number(i.remaining_qty || 0) > 0 &&
+       Number(i.remaining_weight || 0) > 0 && (
+        <button
+          title="Edit"
+          className="edit-btn"
+          onClick={() => edit(i)}
+        >
+          <FaEdit />
+        </button>
+      )}
+
+      {/* DELETE - only available stock */}
+      {Number(i.remaining_qty || 0) > 0 &&
+       Number(i.remaining_weight || 0) > 0 && (
+        <button
+          title="Delete"
+          className="danger"
+          onClick={() => del(i)}
+        >
+          <FaTrash />
+        </button>
+      )}
+
+    </div>
+  </td>
+</tr>
                   )) : <tr><td colSpan="10" className="empty">No opening stock found</td></tr>}
                 </tbody>
               </table>
@@ -359,7 +586,9 @@ const toggleSelectAllCurrent = (checked) => {
                   <option value="">{common.metal_id ? "Select Item Type" : "Select metal first"}</option>{filteredSubs.map(s => <option key={s.id} value={s.id}>{s.sub_name}</option>)}
                 </select>{common.metal_id && filteredSubs.length === 0 && <small className="warn">No item type found for this metal.</small>}</label>
                 <label>Product<select disabled={!common.sub_cat_id} value={common.product_id} onChange={e => updateCommon({ product_id: e.target.value })}>
-                  <option value="">{common.sub_cat_id ? "Select Product" : "Select item type first"}</option>{filteredProducts.map(p => <option key={p.id} value={p.id}>{p.product_name}</option>)}
+                  <option value="">{common.sub_cat_id ? "Select Product" : "Select item type first"}</option>{filteredProducts.map(p => <option key={p.product_id} value={p.product_id}>
+  {p.product_name}
+</option>)}
                 </select>{common.sub_cat_id && filteredProducts.length === 0 && <small className="warn">Please add Product first.</small>}</label>
                 <label>Purity<select value={common.purity} onChange={e => updateCommon({ purity: e.target.value })}>
                   <option value="">Standard / No Purity</option>
