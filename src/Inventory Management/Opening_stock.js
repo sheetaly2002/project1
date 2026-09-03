@@ -73,7 +73,7 @@ const [editingItem, setEditingItem] = useState(null);
  const filteredProducts = useMemo(
   () =>
     products.filter(
-      p => String(p.sub_category_id) === String(common.sub_cat_id)
+      p => String(p.sub_cat_id) === String(common.sub_cat_id)
     ),
   [products, common.sub_cat_id]
 );
@@ -586,9 +586,11 @@ const toggleSelectAllCurrent = (checked) => {
                   <option value="">{common.metal_id ? "Select Item Type" : "Select metal first"}</option>{filteredSubs.map(s => <option key={s.id} value={s.id}>{s.sub_name}</option>)}
                 </select>{common.metal_id && filteredSubs.length === 0 && <small className="warn">No item type found for this metal.</small>}</label>
                 <label>Product<select disabled={!common.sub_cat_id} value={common.product_id} onChange={e => updateCommon({ product_id: e.target.value })}>
-                  <option value="">{common.sub_cat_id ? "Select Product" : "Select item type first"}</option>{filteredProducts.map(p => <option key={p.product_id} value={p.product_id}>
-  {p.product_name}
-</option>)}
+                  <option value="">{common.sub_cat_id ? "Select Product" : "Select item type first"}</option>{filteredProducts.map(p => (
+  <option key={p.id} value={p.id}>
+    {p.product_name}
+  </option>
+))}
                 </select>{common.sub_cat_id && filteredProducts.length === 0 && <small className="warn">Please add Product first.</small>}</label>
                 <label>Purity<select value={common.purity} onChange={e => updateCommon({ purity: e.target.value })}>
                   <option value="">Standard / No Purity</option>
