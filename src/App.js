@@ -25,7 +25,6 @@ import {
   FaWarehouse,
   FaWeightHanging,
 } from "react-icons/fa";
-import { GiThreeLeaves } from "react-icons/gi";
 
 import Login from "./Inventory Management/Login";
 import AllUsers from "./Inventory Management/UserManagement";
@@ -56,6 +55,8 @@ const colors = {
   goldLight: "#ffe55c",
   goldDark: "#b8860b",
 };
+
+const LOGO_SRC = "/Bar-code Logo.jpeg";
 
 const formatMoney = (value) =>
   Number(value || 0).toLocaleString("en-IN", {
@@ -136,10 +137,29 @@ const App = () => {
     setUser(null);
   };
 
+  const permissionModule = {
+    dashboard: "dashboard",
+    master: "master_setup",
+    products: "master_setup",
+    opening_stock: "opening_stock",
+    stock: "stock",
+    customers: "customers",
+    sales: "sales",
+    profit_loss: "reports",
+    cashbook: "payments",
+    repairing: "repairing",
+    reports: "reports",
+    suppliers: "suppliers",
+    purchase: "purchase",
+    AllUsers: "users",
+  };
+
+  const canView = (pageId) => user?.role === "admin" || Number(user?.permissions?.[permissionModule[pageId]]?.can_view) === 1;
+
   const menuItems = [
     { id: "dashboard", name: "Dashboard", icon: <FaChartLine /> },
     { id: "master", name: "Master Setup", icon: <FaTags /> },
-    { id: "products", name: "Product Master", icon: <FaBox /> },
+    { id: "products", name: "Rate Master", icon: <FaBox /> },
     { id: "opening_stock", name: "Opening Stock", icon: <FaPlusSquare /> },
     { id: "stock", name: "Stock Inventory", icon: <FaWarehouse /> },
     { id: "customers", name: "Customers", icon: <FaUsers /> },
@@ -150,10 +170,14 @@ const App = () => {
     { id: "reports", name: "Reports", icon: <FaChartPie /> },
     { id: "suppliers", name: "Suppliers", icon: <FaUserTie /> },
     { id: "purchase", name: "Purchase", icon: <FaTruck /> },
-    ...(user?.role === "admin"
-      ? [{ id: "AllUsers", name: "Manage Users", icon: <FaUserShield /> }]
-      : []),
-  ];
+    { id: "AllUsers", name: "Manage Users", icon: <FaUserShield /> },
+  ].filter((item) => canView(item.id));
+
+  useEffect(() => {
+    if (isAuthenticated && menuItems.length && !menuItems.some((item) => item.id === activePage)) {
+      setActivePage(menuItems[0].id);
+    }
+  }, [isAuthenticated, user?.role, user?.permissions, activePage, menuItems.length]);
 
   if (!isAuthenticated) {
     return (
@@ -179,6 +203,10 @@ const App = () => {
           isMobile={isMobile}
         />
       );
+    }
+
+    if (!canView(activePage)) {
+      return <div style={pageContainerStyle(isMobile)}><div style={{ background: "#fff", borderRadius: 24, padding: 40, textAlign: "center", boxShadow: "0 18px 50px #00000012" }}><h2>Access Restricted</h2><p>You do not have permission to view this module.</p></div></div>;
     }
 
     return (
@@ -207,7 +235,7 @@ const App = () => {
       <aside style={sidebarStyle({ collapsed, isMobile, mobileMenuOpen })}>
         <div style={logoBlockStyle(collapsed, isMobile)}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: collapsed && !isMobile ? "center" : "space-between", gap: 12 }}>
-            <GiThreeLeaves style={{ fontSize: collapsed && !isMobile ? 34 : 42, color: colors.luxuryGold, filter: `drop-shadow(0 0 12px ${colors.luxuryGold})` }} />
+            <img src={LOGO_SRC} alt="Shreeji Jewellers" style={{ width: collapsed && !isMobile ? 46 : 58, height: collapsed && !isMobile ? 46 : 58, objectFit: "cover", borderRadius: "50%", border: `2px solid ${colors.luxuryGold}`, boxShadow: `0 0 18px ${colors.luxuryGold}66` }} />
             {(!collapsed || isMobile) && (
               <div>
                 <div style={{ color: colors.luxuryGold, fontSize: 16, fontWeight: 900, letterSpacing: 3 }}>SHREEJI</div>
