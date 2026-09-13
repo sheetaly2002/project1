@@ -153,11 +153,11 @@ export default function UserManagement() {
               </div>
 
               <div className="field-row">
-                <div className="field"><label>Role</label><select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}><option value="staff">Staff</option><option value="admin">Admin</option></select></div>
+                <div className="field"><label>Role</label><select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}><option value="staff">Staff</option><option value="manager">Manager</option><option value="admin">Admin</option></select></div>
                 <div className="field"><label>Status</label><select value={form.is_active} onChange={(e) => setForm({ ...form, is_active: Number(e.target.value) })}><option value={1}>Active</option><option value={0}>Inactive</option></select></div>
               </div>
 
-              {form.role === "staff" && (
+              {form.role !== "admin" && (
                 <div className="permission-box">
                   <div className="permission-head"><strong>Permissions</strong><div><button type="button" onClick={quickAllowView}>View All</button><button type="button" onClick={quickFullStaff}>Staff Default</button></div></div>
                   <div className="perm-table-wrap">
@@ -189,7 +189,7 @@ export default function UserManagement() {
               {loading ? <div className="loader">Loading...</div> : filteredUsers.length ? filteredUsers.map((u) => (
                 <div className="user-row" key={u.id}>
                   <div><strong>{u.full_name}</strong><span>@{u.username}</span><small>{u.email || "No email"} • {u.mobile || "No mobile"}</small></div>
-                  <div className="user-meta"><em className={u.role === "admin" ? "admin" : "staff"}>{u.role}</em><em className={Number(u.is_active) === 1 ? "active" : "inactive"}>{Number(u.is_active) === 1 ? "Active" : "Inactive"}</em><small>Last: {u.last_login || "Never"}</small></div>
+                  <div className="user-meta"><em className={u.role === "admin" ? "admin" : u.role === "manager" ? "manager" : "staff"}>{u.role}</em><em className={Number(u.is_active) === 1 ? "active" : "inactive"}>{Number(u.is_active) === 1 ? "Active" : "Inactive"}</em><small>Last: {u.last_login || "Never"}</small></div>
                   <div className="user-actions"><button onClick={() => editUser(u)}><FaUserEdit /></button><button onClick={() => deactivateUser(u.id)}><FaTrash /></button></div>
                 </div>
               )) : <div className="empty">No users found.</div>}

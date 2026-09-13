@@ -59,7 +59,7 @@ export default function Login({ setAuth }) {
       });
 
       if (response.data.status === "success") {
-        localStorage.setItem("jewel_user", JSON.stringify(response.data.user));
+        localStorage.setItem("shreeji_user", JSON.stringify(response.data.user));
         setAuth(response.data.user);
       } else {
         setError(response.data.message || "Invalid username or password");

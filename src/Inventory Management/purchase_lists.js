@@ -34,7 +34,7 @@ export default function Purchase(){
   const save=async()=>{
     if(!bill.supplier_id)return show("error","Supplier select karo");
     for(const it of items){ if(bill.purchase_type==="jewellery"&&!it.product_id)return show("error","Product select karo"); if(bill.purchase_type==="raw"&&!it.main_cat_id)return show("error","Raw metal select karo"); if(Number(it.net_weight)<=0||Number(it.rate_per_gram)<=0)return show("error","Weight aur rate required"); }
-    setSaving(true); try{const payload={...bill,items:items.map(it=>{const p=productById(it.product_id)||{}; return {...it,main_cat_id:it.main_cat_id||p.main_cat_id||""}})}; const r=await axios.post(`${API}?action=save`,payload); if(r.data.status==="success"){show("success","Purchase saved"); setBill(emptyBill); setItems([{...emptyJewellery}]); loadList();} else show("error",r.data.message||"Save failed");}catch(e){show("error",e.response?.data?.message||"Save failed")}finally{setSaving(false)}
+    setSaving(true); try{const payload={...bill,items:items.map(it=>{const p=productById(it.product_id)||{}; return {...it,main_cat_id:it.main_cat_id||p.main_cat_id||""}})}; const r=await axios.post(`${API}?action=save`,payload); if(r.data.status==="success"){show("success",`Purchase saved${r.data.barcodes?.length?` • ${r.data.barcodes.length} barcode(s) created in Stock Inventory`:""}`); setBill(emptyBill); setItems([{...emptyJewellery}]); loadList();} else show("error",r.data.message||"Save failed");}catch(e){show("error",e.response?.data?.message||"Save failed")}finally{setSaving(false)}
   };
   return <div className="pu-page">
     {toast.msg&&<div className={`pu-toast ${toast.type}`}>{toast.type==="success"?<FaCheckCircle/>:<FaExclamationCircle/>}{toast.msg}</div>}

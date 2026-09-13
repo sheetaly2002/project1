@@ -175,7 +175,7 @@ export default function StockInventory() {
       <div className="si-container">
         <header className="si-hero">
           <div className="si-hero-brand"><div className="si-logo-wrap"><img src="/Bar-code Logo.jpeg" alt="Shreeji Jewellers" /></div><span>श्रीजी ज्वेलर्स</span></div>
-          <div className="si-hero-content">
+          <div>
             <h1>Stock Inventory</h1>
             <p>Barcode wise jewellery stock, weight, value and availability control</p>
           </div>
